@@ -3,78 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Focus Clothing | Web3 Store</title>
+    <title>Focus Family Marketplace</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; padding: 20px; }
+        .card { background: #2d2d2d; border-radius: 15px; padding: 20px; margin: 20px auto; max-width: 400px; border: 1px solid #7a42f4; }
+        button { background: #7a42f4; color: white; border: none; padding: 15px 30px; border-radius: 25px; font-weight: bold; cursor: pointer; }
+        #user-info { color: #7a42f4; font-weight: bold; }
+    </style>
 </head>
-<body class="bg-black text-white font-sans">
+<body>
 
-    <header class="p-6 border-b border-gray-800 flex justify-between items-center">
-        <h1 class="text-2xl font-bold tracking-tighter">FOCUS CLOTHING</h1>
-        <div id="user-info" class="text-sm text-gray-400">Not Connected</div>
-    </header>
-
-    <main class="p-6 max-w-md mx-auto">
-        <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-2xl">
-            <div class="h-64 bg-gray-800 flex items-center justify-center">
-                <span class="text-gray-500 italic">Premium Apparel Preview</span>
-            </div>
-            <div class="p-6">
-                <h2 class="text-xl font-semibold">Limited Edition "Pioneer" Tee</h2>
-                <p class="text-gray-400 mt-2 text-sm">Exclusive Web3 drop. High-quality fabric, decentralized style.</p>
-                
-                <div class="mt-6 flex items-center justify-between">
-                    <span class="text-2xl font-bold text-purple-400">3.14 Pi</span>
-                    <button onclick="transferPi()" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-full font-bold transition">
-                        Buy Now
-                    </button>
-                </div>
-            </div>
+    <div class="card">
+        <h1>Focus Clothing</h1>
+        <p>Status: <span id="user-info">Connecting...</span></p>
+        
+        <div style="margin: 20px 0; height: 200px; background: #3d3d3d; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+            <p>Premium Apparel Preview</p>
         </div>
-    </main>
+
+        <h3>Limited Edition "Pioneer" Tee</h3>
+        <p>3.14 Pi</p>
+        <button onclick="pay()">Buy Now</button>
+    </div>
 
     <script>
-        // Initialize Pi SDK
-        const Pi = window.Pi;
+        // 2. Initialize the SDK properly
         Pi.init({ version: "2.0", sandbox: false });
 
-        // Authenticate the user
         async function auth() {
             try {
-                const user = await Pi.authenticate(['payments', 'username'], onIncompletePaymentFound);
-                document.getElementById('user-info').innerText = `Welcome, ${user.user.username}`;
+                const scopes = ['username', 'payments'];
+                const onIncompletePaymentFound = (payment) => { /* Handle later */ };
+                
+                const user = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                document.getElementById('user-info').innerText = user.user.username;
+                console.log(`Hello ${user.user.username}`);
             } catch (err) {
+                document.getElementById('user-info').innerText = "Login Required";
                 console.error(err);
             }
         }
 
-        function onIncompletePaymentFound(payment) {
-            console.log("Incomplete payment found", payment);
-        };
-
-        // The Payment Logic
-        async function transferPi() {
+        async function pay() {
             try {
                 const payment = await Pi.createPayment({
                     amount: 3.14,
-                    memo: "Focus Clothing Pioneer Tee",
-                    metadata: { productId: "tee-001" },
+                    memo: "Purchase Pioneer Tee - Focus Clothing",
+                    metadata: { productId: "pioneer-tee-001" },
                 }, {
-                    onReadyForServerApproval: (paymentId) => {
-                        console.log("Payment ready for approval:", paymentId);
-                        // In a full app, your server would approve here
-                    },
-                    onReadyForServerCompletion: (paymentId, txid) => {
-                        alert("Success! Transaction ID: " + txid);
-                    },
+                    onReadyForServerApproval: (paymentId) => { console.log("Approved:", paymentId); },
+                    onReadyForServerCompletion: (paymentId, txid) => { console.log("Completed:", txid); },
                     onCancel: (paymentId) => { console.log("Cancelled"); },
-                    onError: (error, payment) => { console.error("Error", error); },
+                    onError: (error, payment) => { console.error("Error:", error); },
                 });
             } catch (err) {
-                alert("Please open this in the Pi Browser to pay.");
+                alert("Please login to the Pi Browser first!");
             }
         }
 
+        // Run auth immediately
         auth();
     </script>
 </body>
