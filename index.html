@@ -7,65 +7,84 @@
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <style>
         body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; padding: 20px; }
-        .card { background: #2d2d2d; border-radius: 15px; padding: 20px; margin: 20px auto; max-width: 400px; border: 2px solid #7a42f4; }
-        .btn { color: white; border: none; padding: 15px 30px; border-radius: 25px; font-weight: bold; cursor: pointer; width: 80%; margin: 10px 0; }
+        .card { background: #2d2d2d; border-radius: 15px; padding: 20px; margin: 20px auto; max-width: 400px; border: 2px solid #7a42f4; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .btn { color: white; border: none; padding: 15px 30px; border-radius: 25px; font-weight: bold; cursor: pointer; width: 85%; margin: 10px 0; transition: 0.3s; }
         .btn-pay { background: #7a42f4; }
         .btn-login { background: #444; border: 1px solid #7a42f4; }
-        #user-info { color: #cfb2ff; font-weight: bold; font-size: 1.2em; }
+        #user-info { color: #cfb2ff; font-weight: bold; font-size: 1.1em; }
+        .status-box { background: #3d3d3d; padding: 10px; border-radius: 8px; margin: 15px 0; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h1>Focus Clothing</h1>
-        <p>User: <span id="user-info">Login Required</span></p>
+        <div class="status-box">
+            Account: <span id="user-info">Checking...</span>
+        </div>
         
-        <div style="margin: 20px 0; height: 150px; background: #3d3d3d; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-            <p>Premium Apparel Store</p>
+        <div style="margin: 20px 0; height: 120px; background: #333; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px dashed #555;">
+            <p>Pi Network Verified Store</p>
         </div>
 
-        <button class="btn btn-login" onclick="auth()">1. Tap to Sign In</button>
-        
+        <button class="btn btn-login" onclick="auth()">1. Authorize / Sign In</button>
         <button class="btn btn-pay" onclick="pay()">2. Buy Pioneer Tee (3.14 Pi)</button>
+        
+        <p style="font-size: 0.8em; color: #888; margin-top: 15px;">
+            Verify Step 10 by completing a Test-Pi transaction.
+        </p>
     </div>
 
     <script>
-        // Initialize with sandbox false for your verified domain
+        // 1. Initialize - Sandbox False is critical for your verified domain
         Pi.init({ version: "2.0", sandbox: false });
 
+        // 2. Authentication Logic
         async function auth() {
             try {
-                console.log("Starting authentication...");
                 const scopes = ['username', 'payments'];
-                const onIncompletePaymentFound = (payment) => { /* Auto-handle */ };
+                
+                // This handler picks up "Expired" or "Stuck" payments
+                const onIncompletePaymentFound = (payment) => {
+                    console.log("Found incomplete payment", payment);
+                    // In a real app, you'd send payment.identifier to your server here
+                };
                 
                 const user = await Pi.authenticate(scopes, onIncompletePaymentFound);
                 document.getElementById('user-info').innerText = user.user.username;
-                alert("Connected as " + user.user.username);
             } catch (err) {
+                document.getElementById('user-info').innerText = "Login Required";
                 console.error(err);
-                alert("Sign-in failed. Please ensure you are in the Pi Browser.");
             }
         }
 
+        // 3. Payment Logic
         async function pay() {
             try {
                 const payment = await Pi.createPayment({
                     amount: 3.14,
-                    memo: "Focus Clothing - Pioneer Tee",
+                    memo: "Test Purchase - Focus Clothing",
                     metadata: { productId: "pioneer-tee-001" },
                 }, {
-                    onReadyForServerApproval: (paymentId) => { console.log("Approved"); },
-                    onReadyForServerCompletion: (paymentId, txid) => { alert("Success! TX: " + txid); },
+                    onReadyForServerApproval: (paymentId) => {
+                        console.log("Payment Created. ID:", paymentId);
+                        // If you see "Expired," the network is waiting for this approval signal
+                    },
+                    onReadyForServerCompletion: (paymentId, txid) => {
+                        alert("SUCCESS! Transaction ID: " + txid);
+                    },
                     onCancel: (paymentId) => { console.log("Cancelled"); },
-                    onError: (error, payment) => { console.error(error); },
+                    onError: (error, payment) => { 
+                        console.error("Error:", error);
+                        if(error.message.includes("cancelled")) alert("Payment Cancelled");
+                    },
                 });
             } catch (err) {
-                alert("Please Sign In first!");
+                alert("Please tap 'Authorize' first!");
             }
         }
 
-        // Attempt auto-login on load
+        // Run auth on load
         auth();
     </script>
 </body>
