@@ -7,41 +7,44 @@
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <style>
         body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; padding: 20px; }
-        .card { background: #2d2d2d; border-radius: 15px; padding: 20px; margin: 20px auto; max-width: 400px; border: 1px solid #7a42f4; }
-        button { background: #7a42f4; color: white; border: none; padding: 15px 30px; border-radius: 25px; font-weight: bold; cursor: pointer; }
-        #user-info { color: #7a42f4; font-weight: bold; }
+        .card { background: #2d2d2d; border-radius: 15px; padding: 20px; margin: 20px auto; max-width: 400px; border: 2px solid #7a42f4; }
+        .btn { color: white; border: none; padding: 15px 30px; border-radius: 25px; font-weight: bold; cursor: pointer; width: 80%; margin: 10px 0; }
+        .btn-pay { background: #7a42f4; }
+        .btn-login { background: #444; border: 1px solid #7a42f4; }
+        #user-info { color: #cfb2ff; font-weight: bold; font-size: 1.2em; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h1>Focus Clothing</h1>
-        <p>Status: <span id="user-info">Connecting...</span></p>
+        <p>User: <span id="user-info">Login Required</span></p>
         
-        <div style="margin: 20px 0; height: 200px; background: #3d3d3d; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-            <p>Premium Apparel Preview</p>
+        <div style="margin: 20px 0; height: 150px; background: #3d3d3d; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+            <p>Premium Apparel Store</p>
         </div>
 
-        <h3>Limited Edition "Pioneer" Tee</h3>
-        <p>3.14 Pi</p>
-        <button onclick="pay()">Buy Now</button>
+        <button class="btn btn-login" onclick="auth()">1. Tap to Sign In</button>
+        
+        <button class="btn btn-pay" onclick="pay()">2. Buy Pioneer Tee (3.14 Pi)</button>
     </div>
 
     <script>
-        // 2. Initialize the SDK properly
+        // Initialize with sandbox false for your verified domain
         Pi.init({ version: "2.0", sandbox: false });
 
         async function auth() {
             try {
+                console.log("Starting authentication...");
                 const scopes = ['username', 'payments'];
-                const onIncompletePaymentFound = (payment) => { /* Handle later */ };
+                const onIncompletePaymentFound = (payment) => { /* Auto-handle */ };
                 
                 const user = await Pi.authenticate(scopes, onIncompletePaymentFound);
                 document.getElementById('user-info').innerText = user.user.username;
-                console.log(`Hello ${user.user.username}`);
+                alert("Connected as " + user.user.username);
             } catch (err) {
-                document.getElementById('user-info').innerText = "Login Required";
                 console.error(err);
+                alert("Sign-in failed. Please ensure you are in the Pi Browser.");
             }
         }
 
@@ -49,20 +52,20 @@
             try {
                 const payment = await Pi.createPayment({
                     amount: 3.14,
-                    memo: "Purchase Pioneer Tee - Focus Clothing",
+                    memo: "Focus Clothing - Pioneer Tee",
                     metadata: { productId: "pioneer-tee-001" },
                 }, {
-                    onReadyForServerApproval: (paymentId) => { console.log("Approved:", paymentId); },
-                    onReadyForServerCompletion: (paymentId, txid) => { console.log("Completed:", txid); },
+                    onReadyForServerApproval: (paymentId) => { console.log("Approved"); },
+                    onReadyForServerCompletion: (paymentId, txid) => { alert("Success! TX: " + txid); },
                     onCancel: (paymentId) => { console.log("Cancelled"); },
-                    onError: (error, payment) => { console.error("Error:", error); },
+                    onError: (error, payment) => { console.error(error); },
                 });
             } catch (err) {
-                alert("Please login to the Pi Browser first!");
+                alert("Please Sign In first!");
             }
         }
 
-        // Run auth immediately
+        // Attempt auto-login on load
         auth();
     </script>
 </body>
