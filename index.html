@@ -5,86 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Focus Family Marketplace</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; padding: 20px; }
-        .card { background: #2d2d2d; border-radius: 15px; padding: 20px; margin: 20px auto; max-width: 400px; border: 2px solid #7a42f4; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .btn { color: white; border: none; padding: 15px 30px; border-radius: 25px; font-weight: bold; cursor: pointer; width: 85%; margin: 10px 0; transition: 0.3s; }
-        .btn-pay { background: #7a42f4; }
-        .btn-login { background: #444; border: 1px solid #7a42f4; }
-        #user-info { color: #cfb2ff; font-weight: bold; font-size: 1.1em; }
-        .status-box { background: #3d3d3d; padding: 10px; border-radius: 8px; margin: 15px 0; font-size: 0.9em; }
+        body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; padding: 20px; margin: 0; }
+        .card { background: #2d2d2d; border-radius: 15px; padding: 20px; margin: 0 auto; max-width: 500px; border: 1px solid #7a42f4; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px 0; }
+        .product-card { background: #333; border-radius: 12px; padding: 10px; border: 1px solid #444; }
+        .price-tag { color: #cfb2ff; font-weight: bold; display: block; margin: 5px 0; font-size: 0.9em; }
+        .btn-pi { background: #7a42f4; color: white; border: none; padding: 8px; border-radius: 20px; width: 100%; cursor: pointer; font-size: 0.8em; font-weight: bold; }
+        .wa-button { background: #25D366; color: white; text-decoration: none; padding: 8px; border-radius: 20px; display: block; font-size: 0.75em; margin-top: 8px; }
+        .status-box { background: #111; padding: 10px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #7a42f4; text-align: left; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h1>Focus Clothing</h1>
         <div class="status-box">
-            Account: <span id="user-info">Checking...</span>
-        </div>
-        
-        <div style="margin: 20px 0; height: 120px; background: #333; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px dashed #555;">
-            <p>Pi Network Verified Store</p>
+            <small style="color: #888;">Logged in as:</small><br>
+            <span id="user-info" style="color: #7a42f4; font-weight: bold;">Loading Pi Profile...</span>
         </div>
 
-        <button class="btn btn-login" onclick="auth()">1. Authorize / Sign In</button>
-        <button class="btn btn-pay" onclick="pay()">2. Buy Pioneer Tee (3.14 Pi)</button>
-        
-        <p style="font-size: 0.8em; color: #888; margin-top: 15px;">
-            Verify Step 10 by completing a Test-Pi transaction.
-        </p>
+        <h2 style="margin: 0;">Focus Marketplace</h2>
+        <p style="font-size: 0.8em; color: #aaa;">Premium Chinhoyi Apparel & DTF Printing</p>
+
+        <div class="grid">
+            <div class="product-card">
+                <div style="height: 120px; background: #444; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.7em;">Focus Tee</div>
+                <span class="price-tag">3.14 Pi / $10</span>
+                <button class="btn-pi" onclick="pay()">PAY WITH PI</button>
+                <a href="https://wa.me/263712345678?text=I%20want%20the%20Focus%20Tee" class="wa-button"><i class="fab fa-whatsapp"></i> WHATSAPP</a>
+            </div>
+
+            <div class="product-card">
+                <div style="height: 120px; background: #444; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.7em;">Custom DTF</div>
+                <span class="price-tag">1.00 Pi / $3</span>
+                <button class="btn-pi" onclick="pay()">PAY WITH PI</button>
+                <a href="https://wa.me/263712345678?text=I%20want%20Custom%20DTF%20Printing" class="wa-button"><i class="fab fa-whatsapp"></i> WHATSAPP</a>
+            </div>
+        </div>
+
+        <button onclick="auth()" style="background: transparent; color: #555; border: none; font-size: 0.7em; cursor: pointer;">Sync Account</button>
     </div>
 
     <script>
-        // 1. Initialize - Sandbox False is critical for your verified domain
         Pi.init({ version: "2.0", sandbox: false });
 
-        // 2. Authentication Logic
         async function auth() {
             try {
-                const scopes = ['username', 'payments'];
-                
-                // This handler picks up "Expired" or "Stuck" payments
-                const onIncompletePaymentFound = (payment) => {
-                    console.log("Found incomplete payment", payment);
-                    // In a real app, you'd send payment.identifier to your server here
-                };
-                
-                const user = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                const user = await Pi.authenticate(['username', 'payments'], (p) => {});
                 document.getElementById('user-info').innerText = user.user.username;
             } catch (err) {
-                document.getElementById('user-info').innerText = "Login Required";
-                console.error(err);
+                document.getElementById('user-info').innerText = "Login to Pi Browser";
             }
         }
 
-        // 3. Payment Logic
         async function pay() {
             try {
-                const payment = await Pi.createPayment({
+                await Pi.createPayment({
                     amount: 3.14,
-                    memo: "Test Purchase - Focus Clothing",
-                    metadata: { productId: "pioneer-tee-001" },
+                    memo: "Focus Clothing Purchase",
+                    metadata: { item: "Apparel" },
                 }, {
-                    onReadyForServerApproval: (paymentId) => {
-                        console.log("Payment Created. ID:", paymentId);
-                        // If you see "Expired," the network is waiting for this approval signal
-                    },
-                    onReadyForServerCompletion: (paymentId, txid) => {
-                        alert("SUCCESS! Transaction ID: " + txid);
-                    },
-                    onCancel: (paymentId) => { console.log("Cancelled"); },
-                    onError: (error, payment) => { 
-                        console.error("Error:", error);
-                        if(error.message.includes("cancelled")) alert("Payment Cancelled");
-                    },
+                    onReadyForServerApproval: (id) => console.log("Approved", id),
+                    onReadyForServerCompletion: (id, tx) => alert("Success!"),
+                    onCancel: (id) => {},
+                    onError: (e) => console.error(e),
                 });
-            } catch (err) {
-                alert("Please tap 'Authorize' first!");
-            }
+            } catch (err) { alert("Please use the Pi Browser to pay!"); }
         }
 
-        // Run auth on load
         auth();
     </script>
 </body>
