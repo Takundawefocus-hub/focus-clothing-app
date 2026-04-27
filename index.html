@@ -3,78 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Focus Family Marketplace</title>
+    <title>Focus Marketplace | AI & Fashion</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; padding: 20px; margin: 0; }
-        .card { background: #2d2d2d; border-radius: 15px; padding: 20px; margin: 0 auto; max-width: 500px; border: 1px solid #7a42f4; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px 0; }
-        .product-card { background: #333; border-radius: 12px; padding: 10px; border: 1px solid #444; }
-        .price-tag { color: #cfb2ff; font-weight: bold; display: block; margin: 5px 0; font-size: 0.9em; }
-        .btn-pi { background: #7a42f4; color: white; border: none; padding: 8px; border-radius: 20px; width: 100%; cursor: pointer; font-size: 0.8em; font-weight: bold; }
-        .wa-button { background: #25D366; color: white; text-decoration: none; padding: 8px; border-radius: 20px; display: block; font-size: 0.75em; margin-top: 8px; }
-        .status-box { background: #111; padding: 10px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #7a42f4; text-align: left; }
+        :root { --pi-purple: #7a42f4; --wa-green: #25D366; --gold: #d4af37; --crypto-blue: #0088cc; }
+        body { font-family: 'Inter', sans-serif; background: #0f0f0f; color: white; margin: 0; padding: 10px; }
+        .app-container { max-width: 500px; margin: 0 auto; background: #1a1a1a; border-radius: 25px; overflow: hidden; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .header { background: linear-gradient(135deg, #7a42f4, #5a2dc0); padding: 25px 20px; text-align: center; }
+        .user-badge { background: rgba(0,0,0,0.4); padding: 6px 16px; border-radius: 50px; font-size: 0.85em; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.1); }
+        .section-title { padding: 20px 20px 5px; font-size: 1.1em; font-weight: bold; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+        .card { background: #252525; border-radius: 18px; padding: 12px; border: 1px solid #333; }
+        .preview-box { width: 100%; height: 120px; background: #333; border-radius: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; }
+        .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .btn { border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 0.75em; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; }
+        .btn-pi { background: var(--pi-purple); color: white; }
+        .btn-wa { background: #333; color: var(--wa-green); border: 1px solid #444; }
+        .btn-crypto { background: var(--crypto-blue); color: white; }
+        .vendor-footer { background: #222; margin: 20px; padding: 20px; border-radius: 15px; text-align: center; border: 1px dashed #555; }
+        .badge-5star { color: var(--gold); margin-bottom: 10px; display: block; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <div class="status-box">
-            <small style="color: #888;">Logged in as:</small><br>
-            <span id="user-info" style="color: #7a42f4; font-weight: bold;">Loading Pi Profile...</span>
+<div class="app-container">
+    <div class="header">
+        <h2 style="margin:0; letter-spacing: 2px;">FOCUS MARKETPLACE</h2>
+        <div class="user-badge">
+            <i class="fas fa-crown" style="color: var(--gold);"></i>
+            <span id="username">Pioneer Guest</span>
         </div>
-
-        <h2 style="margin: 0;">Focus Marketplace</h2>
-        <p style="font-size: 0.8em; color: #aaa;">Premium Chinhoyi Apparel & DTF Printing</p>
-
-        <div class="grid">
-            <div class="product-card">
-                <div style="height: 120px; background: #444; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.7em;">Focus Tee</div>
-                <span class="price-tag">3.14 Pi / $10</span>
-                <button class="btn-pi" onclick="pay()">PAY WITH PI</button>
-                <a href="https://wa.me/263783993001?text=I%20want%20the%20Focus%20Tee" class="wa-button"><i class="fab fa-whatsapp"></i> WHATSAPP</a>
-            </div>
-
-            <div class="product-card">
-                <div style="height: 120px; background: #444; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.7em;">Custom DTF</div>
-                <span class="price-tag">1.00 Pi / $3</span>
-                <button class="btn-pi" onclick="pay()">PAY WITH PI</button>
-                <a href="https://wa.me/263712345678?text=I%20want%20Custom%20DTF%20Printing" class="wa-button"><i class="fab fa-whatsapp"></i> WHATSAPP</a>
-            </div>
-        </div>
-
-        <button onclick="auth()" style="background: transparent; color: #555; border: none; font-size: 0.7em; cursor: pointer;">Sync Account</button>
     </div>
 
-    <script>
-        Pi.init({ version: "2.0", sandbox: false });
+    <div class="section-title">AI Design Studio</div>
+    <div class="grid">
+        <div class="card" style="grid-column: span 2;">
+            <div class="preview-box" style="height: 140px; background: linear-gradient(45deg, #121212, #2d2d2d);">
+                <i class="fas fa-robot fa-3x" style="color: var(--pi-purple);"></i>
+            </div>
+            <h4 style="margin:0;">Custom AI Fashion Mockup</h4>
+            <p style="font-size: 0.8em; color: #aaa;">Founder: Luckymore Chirenje | AI Expert</p>
+            <div class="btn-group">
+                <button class="btn btn-pi" onclick="handlePiPayment(1.00, 'AI Design')">Order with Pi (1.00)</button>
+                <button class="btn btn-crypto" onclick="copyCrypto()">Pay with USDT (TRC20)</button>
+                <a href="https://wa.me/263783993001?text=I%20want%20to%20order%20an%20AI%20Design%20Mockup" class="btn btn-wa"><i class="fab fa-whatsapp"></i> Chat on WhatsApp</a>
+            </div>
+        </div>
+    </div>
 
-        async function auth() {
-            try {
-                const user = await Pi.authenticate(['username', 'payments'], (p) => {});
-                document.getElementById('user-info').innerText = user.user.username;
-            } catch (err) {
-                document.getElementById('user-info').innerText = "Login to Pi Browser";
-            }
-        }
+    <div class="section-title">Focus Apparel</div>
+    <div class="grid">
+        <div class="card">
+            <div class="preview-box"><i class="fas fa-tshirt fa-2x"></i></div>
+            <small>Focus Original Tee</small>
+            <b style="display:block; margin: 4px 0;">3.14 Pi</b>
+            <button class="btn btn-pi" onclick="handlePiPayment(3.14, 'Original Tee')">BUY</button>
+        </div>
+        <div class="card">
+            <div class="preview-box"><i class="fas fa-print fa-2x"></i></div>
+            <small>DTF Printing</small>
+            <b style="display:block; margin: 4px 0;">5.00 Pi</b>
+            <button class="btn btn-pi" onclick="handlePiPayment(5.00, 'DTF Service')">BUY</button>
+        </div>
+    </div>
 
-        async function pay() {
-            try {
-                await Pi.createPayment({
-                    amount: 3.14,
-                    memo: "Focus Clothing Purchase",
-                    metadata: { item: "Apparel" },
-                }, {
-                    onReadyForServerApproval: (id) => console.log("Approved", id),
-                    onReadyForServerCompletion: (id, tx) => alert("Success!"),
-                    onCancel: (id) => {},
-                    onError: (e) => console.error(e),
-                });
-            } catch (err) { alert("Please use the Pi Browser to pay!"); }
-        }
+    <div class="vendor-footer">
+        <span class="badge-5star"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></span>
+        <h4>Brand Partnerships</h4>
+        <p style="font-size: 0.85em; color: #aaa;">List your local brand here.</p>
+        <a href="https://wa.me/263783993001?text=Hi%20Luckymore,%20I%20want%20to%20list%20my%20brand%20on%20Focus%20Marketplace" 
+           class="btn" style="background: var(--gold); color: black; margin-top: 10px;">
+           <i class="fas fa-handshake"></i> BECOME A VENDOR
+        </a>
+    </div>
+</div>
 
-        auth();
-    </script>
+<script>
+    // INITIALIZE WITH YOUR APP WALLET
+    Pi.init({ version: "2.0", sandbox: false });
+
+    async function initPi() {
+        try {
+            const user = await Pi.authenticate(['username', 'payments'], (p) => {});
+            document.getElementById('username').innerText = user.user.username;
+        } catch (e) { console.log("Standard Browser Mode"); }
+    }
+
+    async function handlePiPayment(amt, itemName) {
+        try {
+            await Pi.createPayment({
+                amount: amt,
+                memo: "Focus Clothing: " + itemName,
+                metadata: { item: itemName, wallet: "GAN4XMIQHAAUM2ZUS6A3A2FNGLJPHT4QNPHNMTOEGRWW3BBKNW554TJ5" },
+            }, {
+                onReadyForServerApproval: (id) => console.log("Approved", id),
+                onReadyForServerCompletion: (id, tx) => alert("Success! Order sent to Luckymore."),
+                onCancel: (id) => {},
+                onError: (e) => alert("Error: Use Pi Browser to pay."),
+            });
+        } catch (e) { alert("Open in Pi Browser to use Pi."); }
+    }
+
+    function copyCrypto() {
+        const address = "TYbYhAk44hqvVht9MXXVTfhSUogeSjpnEi";
+        prompt("Copy my USDT (TRC20) address below. After sending, please message me on WhatsApp!", address);
+    }
+
+    initPi();
+</script>
 </body>
 </html>
