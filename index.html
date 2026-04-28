@@ -1,45 +1,71 @@
-import { useEffect, useState } from 'react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Focus Clothing Hub | Industrial DTF</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+<body style="background-color: #000; color: #fff; font-family: sans-serif;">
 
-export default function PiConnectionManager() {
-  const [status, setStatus] = useState("Initializing...");
-  const [isOnline, setIsOnline] = useState(false);
-
-  useEffect(() => {
-    // 1. Ensure we only run this on the client side
-    if (typeof window !== "undefined" && window.Pi) {
-      try {
-        // 2. Initialize SDK v2.0 (Required for 2026 Protocol)
-        window.Pi.init({ 
-          version: "2.0", 
-          sandbox: process.env.NODE_ENV !== 'production' 
-        });
-
-        // 3. Force Auth - This replaces other payment triggers
-        window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound)
-          .then((auth) => {
-            console.log(`Connected as ${auth.user.username}`);
-            setIsOnline(true);
-            setStatus("System Live");
-          })
-          .catch((error) => {
-            console.error("Auth failed:", error);
-            setStatus("Connection Failed: Wallet Not Found");
-          });
-      } catch (err) {
-        setStatus("SDK Error: Check Script Tag");
-      }
-    }
-  }, []);
-
-  // Use this to handle interrupted Pi payments
-  function onIncompletePaymentFound(payment) {
-    console.log("Found incomplete payment", payment);
-    // Logic to resolve stuck 1 Pi transactions
-  };
-
-  return (
-    <div className={`status-banner ${isOnline ? 'bg-green' : 'bg-purple'}`}>
-      {status}
+    <div id="status-banner" style="padding: 15px; text-align: center; background: #6b46c1;">
+        Connecting to Pi Wallet...
     </div>
-  );
-}
+
+    <div id="main-hub" style="display:none; padding: 20px;">
+        <h2>Industrial Hub</h2>
+        <p>High-Fidelity DTF Printing</p>
+        <button id="pay-button" onclick="initiatePayment()" style="width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; background: white; color: black; border: none;">
+            QUICK START (1 Pi)
+        </button>
+    </div>
+
+    <script>
+        const statusBanner = document.getElementById('status-banner');
+        const mainHub = document.getElementById('main-hub');
+
+        // Initializing for Protocol 23
+        window.onload = function() {
+            if (window.Pi) {
+                // version 2.0 is required for 2026 compliance
+                window.Pi.init({ version: "2.0", sandbox: false });
+
+                window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound)
+                .then(function(auth) {
+                    statusBanner.innerText = "System Live: " + auth.user.username;
+                    statusBanner.style.background = "#22c55e"; // Green for Online
+                    mainHub.style.display = "block";
+                })
+                .catch(function(err) {
+                    statusBanner.innerText = "Please Open in Pi Browser";
+                    statusBanner.style.background = "#ef4444"; // Red for Error
+                });
+            }
+        };
+
+        function initiatePayment() {
+            window.Pi.createPayment({
+                amount: 1,
+                memo: "DTF Printing Service - Focus Clothing",
+                metadata: { orderType: "DTF_High_Fidelity" },
+            }, {
+                onReadyForServerApproval: function(paymentId) {
+                    console.log("Payment created, ID:", paymentId);
+                    // Automatically approve on client-side for simple apps 
+                    // or send paymentId to your backend here.
+                },
+                onReadyForServerCompletion: function(paymentId, txid) {
+                    alert("Payment Successful! TXID: " + txid);
+                },
+                onCancel: function(paymentId) { console.log("User cancelled"); },
+                onError: function(error, payment) { console.error("Payment Error", error); },
+            });
+        }
+
+        function onIncompletePaymentFound(payment) {
+            console.log("Resolving stuck payment...");
+            // This is crucial for 1 Pi transactions so they don't get 'stuck'
+        };
+    </script>
+</body>
+</html>
