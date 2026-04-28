@@ -3,97 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Focus Marketplace | Web3 Ecosystem</title>
+    <title>Focus OS | Industrial Web3</title>
     
     <link rel="icon" type="image/png" href="logo.png">
-    <link rel="apple-touch-icon" href="logo.png">
-    
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        :root { --pi-purple: #7a42f4; --wa-green: #25D366; --gold: #d4af37; --crypto-blue: #0088cc; --dark-bg: #0f0f0f; --card-bg: #1e1e1e; }
-        body { font-family: 'Inter', sans-serif; background: var(--dark-bg); color: white; margin: 0; padding: 10px; }
-        .app-container { max-width: 500px; margin: 0 auto; background: var(--card-bg); border-radius: 20px; overflow: hidden; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .header { background: linear-gradient(135deg, #7a42f4, #2a155c); padding: 25px 20px; text-align: center; border-bottom: 2px solid var(--gold); }
-        .user-badge { background: rgba(0,0,0,0.5); padding: 8px 16px; border-radius: 50px; font-size: 0.85em; display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; }
-        .section-title { padding: 20px 20px 10px; font-size: 1.1em; font-weight: bold; color: var(--gold); border-bottom: 1px solid #333; margin-bottom: 15px; text-transform: uppercase; }
-        .grid { display: grid; grid-template-columns: 1fr; gap: 15px; padding: 0 15px 15px; }
-        .card { background: #252525; border-radius: 15px; padding: 15px; border: 1px solid #444; }
-        .preview-box { width: 100%; height: 160px; background: #111; border-radius: 12px; margin-bottom: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .preview-box img { width: 100%; height: 100%; object-fit: cover; }
-        .calc-row { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
-        select, input { background: #111; color: white; border: 1px solid #555; padding: 8px; border-radius: 5px; width: 60%; }
-        #calc-total { font-size: 1.2em; font-weight: bold; color: var(--pi-purple); }
-        .btn { border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; color: white; text-decoration: none; }
-        .btn-pi { background: var(--pi-purple); }
-        .btn-wa { background: var(--wa-green); }
-        .btn-gold { background: var(--gold); color: black; }
-        .vault-hidden { display: none; background: #111; padding: 15px; border-radius: 10px; border-left: 4px solid var(--gold); margin-top: 10px; }
-        .wholesale-price { display: none; color: var(--wa-green); font-weight: bold; }
-        .retail-price { display: inline; }
-        .feed-item { background: #111; padding: 10px; border-radius: 8px; font-size: 0.85em; margin-bottom: 10px; border-left: 2px solid var(--crypto-blue); }
+        :root { --gold: #d4af37; --pi: #7a42f4; --bg: #050505; --card: #121212; --border: #222; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 40px; overflow-x: hidden; }
+        
+        /* Glassmorphism Header */
+        .header { position: sticky; top: 0; z-index: 1000; background: rgba(5,5,5,0.8); backdrop-filter: blur(15px); padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .logo { height: 28px; filter: drop-shadow(0 0 5px rgba(212,175,55,0.3)); }
+        .wallet { background: var(--pi); padding: 6px 14px; border-radius: 30px; font-size: 0.7em; font-weight: 900; letter-spacing: 1px; }
+
+        .bento-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 15px; max-width: 500px; margin: 0 auto; }
+        
+        /* Bento Tiles */
+        .tile { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 18px; position: relative; overflow: hidden; transition: 0.3s; }
+        .tile:active { transform: scale(0.97); background: #1a1a1a; }
+        .full-width { grid-column: span 2; }
+        
+        .tile-label { font-size: 0.65em; font-weight: 800; color: var(--gold); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; display: block; }
+        .tile-title { font-size: 1.1em; font-weight: 700; margin: 0 0 5px 0; display: block; }
+        .tile-desc { font-size: 0.75em; color: #888; line-height: 1.4; }
+
+        /* Industrial Component */
+        .stat-pill { background: rgba(37, 211, 102, 0.1); color: #25D366; padding: 4px 8px; border-radius: 6px; font-size: 0.6em; font-weight: bold; margin-top: 10px; display: inline-block; }
+
+        /* The Robot: Live Feed */
+        #news-feed { font-size: 0.8em; color: #bbb; line-height: 1.5; }
+        .news-entry { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #222; }
+
+        /* The Foreman AI Concierge */
+        .ai-overlay { position: fixed; bottom: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; padding: 20px; box-sizing: border-box; flex-direction: column; }
+        .foreman-header { border-bottom: 1px solid var(--gold); padding-bottom: 15px; margin-bottom: 20px; }
+        .chat-box { flex-grow: 1; overflow-y: auto; color: #ccc; font-size: 0.9em; }
+        .foreman-btn { background: var(--gold); color: black; border: none; padding: 15px; border-radius: 12px; font-weight: bold; margin-top: 10px; width: 100%; cursor: pointer; }
+        
+        .floating-foreman { position: fixed; bottom: 25px; right: 25px; background: var(--gold); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(212,175,55,0.4); cursor: pointer; z-index: 1500; font-size: 1.5em; color: black; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div class="header">
-        <img src="logo.png" alt="Focus Logo" style="height: 50px; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;" onerror="this.style.display='none'">
-        <h2 style="margin:0;">FOCUS ECOSYSTEM</h2>
-        <div class="user-badge"><i class="fas fa-wallet"></i> <span id="username">Syncing...</span></div>
+<div class="header">
+    <img src="logo.png" class="logo" onerror="this.style.opacity='0'">
+    <div class="wallet" id="user-id">SYNCING...</div>
+</div>
+
+<div class="bento-grid">
+    <div class="tile full-width">
+        <span class="tile-label"><i class="fas fa-rss"></i> Live Intelligence</span>
+        <div id="news-feed">Optimizing neural links to global Web3 feeds...</div>
     </div>
 
-    <div class="section-title"><i class="fas fa-print"></i> DTF Printing Service</div>
-    <div class="grid">
-        <div class="card">
-            <div class="preview-box"><img src="dtf-print.jpg" alt="DTF Print" onerror="this.src='https://via.placeholder.com/400x200?text=DTF+Printing'"></div>
-            <div class="calc-row">
-                <label>Size:</label>
-                <select id="dtf-size" onchange="calculateDTF()">
-                    <option value="1">Pocket (1 Pi)</option>
-                    <option value="2.5">A3 Print (2.5 Pi)</option>
-                    <option value="8">1m Gang Sheet (8 Pi)</option>
-                </select>
-            </div>
-            <div class="calc-row">
-                <label>Qty:</label>
-                <input type="number" id="dtf-qty" value="1" min="1" onchange="calculateDTF()">
-            </div>
-            <div class="calc-row"><label>Total:</label><span id="calc-total">1.00 Pi</span></div>
-            <button class="btn btn-pi" onclick="payDynamicDTF()">Pay with Pi</button>
+    <div class="tile full-width" onclick="location.href='#print'">
+        <span class="tile-label">Industrial Hub</span>
+        <span class="tile-title">High-Fidelity DTF</span>
+        <p class="tile-desc">Commercial output. Zero-fade white layering.</p>
+        <div class="stat-pill">SYSTEM ONLINE</div>
+        <button class="foreman-btn" style="background: white; color: black; font-size: 0.8em; padding: 8px; margin-top: 15px;" onclick="pay(1)">QUICK START (1 Pi)</button>
+    </div>
+
+    <div class="tile">
+        <span class="tile-label">Vault</span>
+        <span class="tile-title">Books</span>
+        <p class="tile-desc">Web3 & AI Playbooks.</p>
+    </div>
+
+    <div class="tile">
+        <span class="tile-label">Studio</span>
+        <span class="tile-title">AI Art</span>
+        <p class="tile-desc">Custom mockups.</p>
+    </div>
+</div>
+
+<div class="floating-foreman" onclick="openForeman()">
+    <i class="fas fa-hard-hat"></i>
+</div>
+
+<div class="ai-overlay" id="foreman-ui">
+    <div class="foreman-header">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0; font-size:1.2em;">FACTORY FOREMAN</h2>
+            <i class="fas fa-times" onclick="closeForeman()" style="font-size:1.5em;"></i>
         </div>
+        <p style="font-size:0.7em; color:var(--gold); margin-top:5px;">AI PRODUCTION ASSISTANT ACTIVE</p>
     </div>
-
-    <div class="section-title"><i class="fas fa-robot"></i> AI Design Studio</div>
-    <div class="grid">
-        <div class="card">
-            <div class="preview-box"><img src="ai-service.jpg" alt="AI Design" onerror="this.src='https://via.placeholder.com/400x200?text=AI+Design+Mockups'"></div>
-            <h4>Custom AI Mockups</h4>
-            <button class="btn btn-pi" onclick="handlePiPayment(1.00, 'AI Design')">Order with Pi (1.00)</button>
-            <a href="https://wa.me/263783993001?text=Hi%20Luckymore,%20I%20want%20an%20AI%20mockup" class="btn btn-wa"><i class="fab fa-whatsapp"></i> Chat on WhatsApp</a>
-        </div>
+    <div class="chat-box" id="foreman-chat">
+        <p>I am monitoring the Industrial Unit. We are ready for production. Do you have a design ready, or do you need me to help you engineer a prompt for your apparel?</p>
     </div>
-
-    <div class="section-title"><i class="fas fa-tshirt"></i> Premium Apparel</div>
-    <div class="grid">
-        <div class="card">
-            <div class="preview-box"><img src="original-tee.jpg" alt="Focus Tee" onerror="this.src='https://via.placeholder.com/400x200?text=Focus+Original+Tee'"></div>
-            <p>Focus Original Tee - <b class="retail-price">3.14 Pi</b> <b class="wholesale-price">2.00 Pi</b></p>
-            <button class="btn btn-pi" onclick="handlePiPayment(3.14, 'Original Tee')">BUY NOW</button>
-        </div>
-    </div>
-
-    <div class="section-title"><i class="fas fa-industry"></i> Vendor Portal</div>
-    <div class="grid">
-        <div class="card">
-            <button class="btn btn-gold" id="btn-vip" onclick="activateWholesale()"><i class="fas fa-key"></i> Activate Wholesale Status (10 Pi)</button>
-            <p style="font-size: 0.7em; color: #888; text-align: center; margin-top: 10px;">Partner with Luckymore Chirenje to scale your brand.</p>
-        </div>
-    </div>
-
-    <div class="section-title"><i class="fas fa-broadcast-tower"></i> Web3 Feed</div>
-    <div class="grid" style="padding-bottom: 30px;">
-        <div class="feed-item"><strong>@FocusFounder</strong> Just deployed the visual ecosystem update. DTF Calculator is live.</div>
+    <div style="margin-top:auto;">
+        <button class="foreman-btn" onclick="askForeman('Design Help')">Design Assistance</button>
+        <button class="foreman-btn" style="background:transparent; color:white; border:1px solid #444;" onclick="askForeman('Order Status')">Check Production Line</button>
     </div>
 </div>
 
@@ -103,41 +106,40 @@
     async function initPi() {
         try {
             const user = await Pi.authenticate(['username', 'payments'], (p) => {});
-            document.getElementById('username').innerText = user.user.username;
-        } catch (e) { document.getElementById('username').innerText = "Guest Mode"; }
+            document.getElementById('user-id').innerText = user.user.username.toUpperCase();
+        } catch (e) { document.getElementById('user-id').innerText = "OFFLINE MODE"; }
     }
 
-    let currentQuote = 1.00;
-    function calculateDTF() {
-        currentQuote = (parseFloat(document.getElementById('dtf-size').value) * parseInt(document.getElementById('dtf-qty').value)).toFixed(2);
-        document.getElementById('calc-total').innerText = currentQuote + " Pi";
-    }
-
-    async function payDynamicDTF() { handlePiPayment(parseFloat(currentQuote), "DTF Print Quote"); }
-
-    function activateWholesale() {
-        document.querySelectorAll('.retail-price').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.wholesale-price').forEach(el => el.style.display = 'block');
-        document.getElementById('btn-vip').innerText = "Status: VENDOR ACTIVE";
-        document.getElementById('btn-vip').style.background = "#25D366";
-        document.getElementById('btn-vip').style.color = "white";
-    }
-
-    async function handlePiPayment(amt, itemName) {
+    // THE ROBOT: Real News
+    async function getNews() {
         try {
-            await Pi.createPayment({
-                amount: amt,
-                memo: "Focus Eco: " + itemName,
-                metadata: { item: itemName, wallet: "GAN4XMIQHAAUM2ZUS6A3A2FNGLJPHT4QNPHNMTOEGRWW3BBKNW554TJ5" },
-            }, {
-                onReadyForServerApproval: (id) => console.log("Approved", id),
-                onReadyForServerCompletion: (id, tx) => alert("Order Placed!"),
-                onCancel: (id) => {},
-                onError: (e) => alert("Please use the Pi Browser."),
+            const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.coindesk.com/arc/outboundfeeds/rss/');
+            const data = await res.json();
+            let html = '';
+            data.items.slice(0, 2).forEach(item => {
+                html += `<div class="news-entry"><strong>${item.title}</strong></div>`;
             });
-        } catch (e) { alert("Pi Browser required for payments."); }
+            document.getElementById('news-feed').innerHTML = html;
+        } catch (e) { document.getElementById('news-feed').innerText = "Static Alpha: Pi Network preparing for Open Mainnet utility."; }
     }
+
+    // THE FOREMAN UI
+    function openForeman() { document.getElementById('foreman-ui').style.display = 'flex'; }
+    function closeForeman() { document.getElementById('foreman-ui').style.display = 'none'; }
+    
+    function askForeman(topic) {
+        const chat = document.getElementById('foreman-chat');
+        if(topic === 'Design Help') {
+            chat.innerHTML += `<p style="color:var(--gold)"><strong>Foreman:</strong> Opening AI Bridge. I recommend 300DPI PNG files for our Industrial DTF unit to ensure the white base pops on dark fabrics. Redirecting to Luckymore for technical specs...</p>`;
+            setTimeout(() => { window.location.href="https://wa.me/263783993001?text=Foreman_Sent_Me_For_Design_Help"; }, 2000);
+        } else {
+            chat.innerHTML += `<p><strong>Foreman:</strong> Production line is clear. We are maintaining 100% nozzle health. Ready for your next command.</p>`;
+        }
+    }
+
     initPi();
+    getNews();
 </script>
+
 </body>
 </html>
