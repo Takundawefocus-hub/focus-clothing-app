@@ -3,75 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Focus Clothing | Testnet Hub</title>
+    <title>Focus Clothing | Industrial Hub</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <style>
-        body { background-color: #0d0d0d; color: white; font-family: sans-serif; margin: 0; text-align: center; }
-        #status-bar { padding: 15px; font-weight: bold; background: #222; border-bottom: 2px solid #444; }
+        :root { --brand-purple: #6b46c1; --bg-black: #0a0a0a; --p-yellow: #ffa500; }
+        body { background-color: var(--bg-black); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; text-align: center; }
+        #status-bar { padding: 12px; font-weight: bold; letter-spacing: 1px; font-size: 14px; background: #222; border-bottom: 2px solid #333; transition: border 0.3s; }
         .online { color: #22c55e; border-bottom-color: #22c55e !important; }
         .offline { color: #ef4444; border-bottom-color: #ef4444 !important; }
-        .container { padding: 40px 20px; }
-        .card { background: #1a1a1a; border: 1px solid #333; border-radius: 15px; padding: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .btn-test { background: #ffa500; color: black; border: none; padding: 18px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; }
+        .container { padding: 30px 15px; }
+        .industrial-card { background: linear-gradient(145deg, #1a1a1a, #121212); border: 1px solid #2a2a2a; border-radius: 20px; padding: 30px; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .btn-test { background: var(--p-yellow); color: black; border: none; padding: 18px; border-radius: 12px; font-size: 1rem; font-weight: 900; cursor: pointer; width: 100%; transition: transform 0.1s; text-transform: uppercase; }
+        .btn-test:active { transform: scale(0.98); }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 5px; font-size: 10px; background: #333; color: var(--p-yellow); margin-bottom: 10px; border: 1px solid var(--p-yellow); font-weight: bold;}
     </style>
 </head>
 <body>
 
-    <div id="status-bar">CONNECTING...</div>
+    <div id="status-bar" class="offline">AUTHENTICATION: PAUSED (EASY MODE)</div>
 
     <div class="container">
-        <div id="user-info" style="color: #888; margin-bottom: 20px;">Checking Pi Browser Auth...</div>
-
-        <div id="hub-ui" style="display:none;">
-            <div class="card">
-                <h2 style="margin-top:0;">Focus Industrial Hub</h2>
-                <p style="color: #666;">High-Fidelity DTF Testing</p>
-                <button class="btn-test" onclick="payOneTestPi()">SEND 1 TEST PI</button>
+        <div id="hub-ui">
+            <div class="industrial-card">
+                <span class="badge">PROTOCOL V23 TESTNET</span>
+                <h2 style="margin: 10px 0;">Industrial Hub</h2>
+                <p style="color: #666; font-size: 14px; margin-bottom: 25px;">Focus Clothing | DTF High-Fidelity Prints</p>
+                
+                <button class="btn-test" onclick="easyModeTrigger()">QUICK START (1 TEST-PI)</button>
+                <p style="font-size: 11px; color: #444; margin-top: 15px;">Note: Pi Payments will not process in Easy Mode.</p>
             </div>
         </div>
     </div>
 
     <script>
-        const statusBar = document.getElementById('status-bar');
-        const hubUI = document.getElementById('hub-ui');
-        const userDisplay = document.getElementById('user-info');
+        // *** AUTHENTICATION BYPASS ENABLED ***
 
-        // 1. Initialize for TESTNET (sandbox: true)
+        // Load UI immediately without waiting for Pi SDK
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('hub-ui').style.display = "block";
+            const statusBar = document.getElementById('status-bar');
+            statusBar.innerText = "HUB LIVE (DEMO MODE)";
+            statusBar.className = "online"; // Set to green for visual confirmation
+        });
+
+        // Simple button trigger that does not call Pi payments
+        function easyModeTrigger() {
+            alert("Focus Clothing Industrial Hub Demo.\n\nTo enable actual 1 Test-Pi payments, we must complete the security handshake on another device.");
+        }
+
+        // Keep SDK in place but do not initialize auth flow
         if (window.Pi) {
-            window.Pi.init({ version: "2.0", sandbox: true });
-
-            window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound)
-            .then(function(auth) {
-                statusBar.innerText = "ONLINE: TESTNET";
-                statusBar.className = "online";
-                userDisplay.innerText = "Logged in as: " + auth.user.username;
-                hubUI.style.display = "block";
-            })
-            .catch(function(err) {
-                statusBar.innerText = "ACCESS DENIED: REFRESH BROWSER";
-                statusBar.className = "offline";
-            });
-        }
-
-        // 2. Testnet Payment
-        function payOneTestPi() {
-            window.Pi.createPayment({
-                amount: 1,
-                memo: "DTF Test - Focus Clothing",
-                metadata: { order: "test_001" }
-            }, {
-                onReadyForServerApproval: (pid) => console.log("Approval ID:", pid),
-                onReadyForServerCompletion: (pid, txid) => alert("Success! TxID: " + txid),
-                onCancel: (pid) => console.log("Cancelled"),
-                onError: (err) => alert("Error: Make sure you have Test Pi in your wallet.")
-            });
-        }
-
-        // 3. Cleanup Stuck Payments
-        function onIncompletePaymentFound(payment) {
-            console.log("Cleaning up incomplete payment:", payment.identifier);
+            // window.Pi.init({ version: "2.0", sandbox: true });
+            console.log("Pi SDK is present. Easy Mode Bypass is active.");
         }
     </script>
 </body>
 </html>
-
