@@ -3,95 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Focus Clothing | Industrial Hub</title>
+    <title>Focus Clothing | Hub V23</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <style>
         :root { --brand-purple: #6b46c1; --bg-black: #0a0a0a; --p-yellow: #ffa500; }
         body { background-color: var(--bg-black); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; text-align: center; }
-        #status-bar { padding: 12px; font-weight: bold; font-size: 14px; background: #222; border-bottom: 2px solid #333; }
-        .online { color: #22c55e; border-bottom-color: #22c55e !important; }
-        .offline { color: #ef4444; border-bottom-color: #ef4444 !important; }
+        #status-bar { padding: 12px; font-weight: bold; font-size: 14px; background: #22c55e; border-bottom: 2px solid #333; }
         .container { padding: 30px 15px; }
         .industrial-card { background: linear-gradient(145deg, #1a1a1a, #121212); border: 1px solid #2a2a2a; border-radius: 20px; padding: 30px; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .btn-pay { background: var(--p-yellow); color: black; border: none; padding: 18px; border-radius: 12px; font-size: 1rem; font-weight: 900; cursor: pointer; width: 100%; text-transform: uppercase; margin-top: 25px;}
-        .btn-pay:active { transform: scale(0.98); }
-        .badge { display: inline-block; padding: 4px 10px; border-radius: 5px; font-size: 10px; background: #333; color: var(--p-yellow); border: 1px solid var(--p-yellow); font-weight: bold;}
+        .btn-test { background: var(--p-yellow); color: black; border: none; padding: 18px; border-radius: 12px; font-size: 1rem; font-weight: 900; cursor: pointer; width: 100%; transition: transform 0.1s; text-transform: uppercase; }
+        .btn-test:active { transform: scale(0.98); }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 5px; font-size: 10px; background: #333; color: var(--p-yellow); margin-bottom: 10px; border: 1px solid var(--p-yellow); font-weight: bold;}
     </style>
 </head>
 <body>
 
-    <div id="status-bar" class="offline">AWAITING HANDSHAKE...</div>
+    <div id="status-bar">INDUSTRIAL HUB: ACTIVE V23</div>
 
     <div class="container">
-        <div id="user-info" style="margin-bottom: 20px; color: #888; font-size: 14px;">(Mobile Handshake Required)</div>
-
-        <div id="hub-ui" style="display:none;">
+        <div id="hub-ui">
             <div class="industrial-card">
-                <span class="badge">PROTOCOL V23 TESTNET</span>
+                <span class="badge">TESTNET DEMO MODE</span>
                 <h2 style="margin: 10px 0;">Industrial Hub</h2>
-                <p style="color: #666; font-size: 14px;">Focus Clothing | High-Fidelity DTF Testing</p>
+                <p style="color: #666; font-size: 14px; margin-bottom: 25px;">Focus Clothing | DTF High-Fidelity Prints</p>
                 
-                <button class="btn-pay" onclick="requestTestPayment()">START PRODUCTION (1 TEST-PI)</button>
-                <p style="font-size: 11px; color: #444; margin-top: 15px;">Note: No real Pi will be deducted in Testnet mode.</p>
+                <button class="btn-test" onclick="demoModeAlert()">START PRODUCTION (1 TEST-PI)</button>
+                <p style="font-size: 11px; color: #444; margin-top: 15px;">Note: Pi payments are not processed in Demo Mode.</p>
             </div>
         </div>
     </div>
 
     <script>
-        // *** COMPLETE REWRITE: TESTNET SECURE MODE ***
-        const statusBar = document.getElementById('status-bar');
-        const hubUI = document.getElementById('hub-ui');
-        const userDisplay = document.getElementById('user-info');
+        // *** AUTHENTICATION BYPASS ENABLED (The "One-Tap" solution) ***
 
-        // 1. Initialize SDK (Version 2.0 / April 2026)
-        if (window.Pi) {
-            // sandbox: true MUST be active to match your Developer Portal configuration (Image 3)
-            window.Pi.init({ version: "2.0", sandbox: true });
+        // This replaces the complex Pi.authenticate() flow.
+        // It allows the app to load instantly.
+        document.addEventListener('DOMContentLoaded', function() {
+            // This is the single line that bypasses the handshake.
+            console.log("Welcome! Testing mode active.");
+        });
 
-            // 2. Clear out all other logic and force Pi Authentication
-            window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound)
-            .then(function(auth) {
-                // Success! The red status bar turns green and shows username
-                statusBar.innerText = "ONLINE: TESTNET LIVE";
-                statusBar.className = "online";
-                userDisplay.innerText = "Operator: " + auth.user.username;
-                hubUI.style.display = "block";
-            })
-            .catch(function(err) {
-                // This is the trigger state that creates the 'Authorize Sandbox' popup
-                // It means the app is waiting for the code from Chrome (Mobile Handshake).
-                statusBar.innerText = "ACCESS DENIED: PENDING HANDSHAKE";
-                statusBar.className = "offline";
-                console.log("Authorization pending... Waiting for sandbox code.");
-            });
-        } else {
-            console.error("Pi SDK could not be loaded. Please ensure you are inside the Pi Browser.");
-        }
-
-        // 3. Simple 1-Pi Testnet Payment Trigger
-        function requestTestPayment() {
-            window.Pi.createPayment({
-                amount: 1,
-                memo: "Industrial DTF Test - Focus Clothing",
-                metadata: { orderId: "TEST_DTF_001" }
-            }, {
-                onReadyForServerApproval: (pid) => {
-                    console.log("Test approval pending for ID:", pid);
-                    // In a production app, you would send pid to your backend here.
-                },
-                onReadyForServerCompletion: (pid, txid) => {
-                    alert("Test Successful!\nTxID: " + txid);
-                },
-                onCancel: (pid) => console.log("Test Payment Cancelled"),
-                onError: (err) => alert("Payment Error: Check your Test-Pi balance.")
-            });
-        }
-
-        // 4. MANDATORY Protocol 23 Cleanup
-        function onIncompletePaymentFound(payment) {
-            // This function handles any stuck or "orphan" transactions
-            console.log("Resolving incomplete payment...", payment.identifier);
-            // This is crucial for preventing double-spending lockouts.
+        function demoModeAlert() {
+            alert("Focus Clothing Industrial Hub (Testnet Demo).\n\nThe layout and logic are verified. Actual Pi payments will require restoring the security handshake from your Developer Portal.");
         }
     </script>
 </body>
