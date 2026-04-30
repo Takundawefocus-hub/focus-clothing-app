@@ -9,23 +9,12 @@
     <style>
         :root { --ios-bg: #000; --ios-gold: #FFD60A; --ios-card: #1C1C1E; --ios-border: #38383A; }
         body { background: var(--ios-bg); color: #FFF; font-family: -apple-system, sans-serif; margin: 0; overflow: hidden; }
-        
-        header { padding: 45px 20px 10px; border-bottom: 1px solid var(--ios-border); text-align: center; background: #000; position: sticky; top: 0; z-index: 100; }
-        .view { display: none; padding: 20px; height: 85vh; overflow-y: auto; box-sizing: border-box; }
+        header { padding: 45px 20px 10px; border-bottom: 1px solid var(--ios-border); text-align: center; }
+        .view { display: none; padding: 20px; height: 85vh; box-sizing: border-box; }
         .active { display: block; }
-
-        /* The Canvas */
-        .canvas { 
-            width: 100%; aspect-ratio: 1/1; background: #111; border-radius: 12px; 
-            border: 1px solid var(--ios-border); position: relative; overflow: hidden;
-            display: flex; align-items: center; justify-content: center; touch-action: none;
-        }
+        .canvas { width: 100%; aspect-ratio: 1/1; background: #111; border-radius: 12px; border: 1px solid var(--ios-border); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; touch-action: none; }
         #logo-preview { position: absolute; max-width: 150px; display: none; touch-action: none; z-index: 50; border: 1px dashed var(--ios-gold); }
-
-        /* Buttons */
         .btn { background: var(--ios-gold); color: #000; border: none; padding: 18px; border-radius: 12px; font-weight: 800; width: 100%; margin-top: 15px; font-size: 16px; }
-        .btn-sec { background: #222; color: #fff; border: 1px solid var(--ios-border); }
-        
         nav { position: fixed; bottom: 0; width: 100%; height: 85px; background: #111; border-top: 1px solid var(--ios-border); display: flex; justify-content: space-around; align-items: center; padding-bottom: 15px; }
         .nav-item { color: #8E8E93; font-size: 11px; font-weight: 700; cursor: pointer; border: none; background: none; }
         .nav-item.active { color: var(--ios-gold); }
@@ -35,25 +24,20 @@
 
     <header>
         <h2 style="margin:0; letter-spacing:-1px;">FOCUS DESIGN LAB</h2>
-        <div id="status" style="font-size:10px; color:var(--ios-gold); font-weight:700; margin-top:4px;">CONNECTING TO PI...</div>
+        <div id="status" style="font-size:10px; color:var(--ios-gold); font-weight:700; margin-top:4px;">INITIALIZING SANDBOX...</div>
     </header>
 
     <div id="lab" class="view active">
-        <div class="canvas">
-            <span style="color:#222; font-weight:900; font-size:40px; pointer-events:none;">FOCUS</span>
-            <img id="logo-preview" src="">
-        </div>
-        
+        <div class="canvas"><img id="logo-preview" src=""></div>
         <input type="file" id="up" hidden onchange="handleImage(event)">
-        <button class="btn btn-sec" onclick="document.getElementById('up').click()">CHOOSE ARTWORK</button>
+        <button class="btn" style="background:#222; color:#fff;" onclick="document.getElementById('up').click()">CHOOSE ARTWORK</button>
         <button class="btn" id="payBtn" onclick="pay()">PAY 1 TEST-PI</button>
     </div>
 
     <div id="acc" class="view">
         <div style="background:var(--ios-card); padding:20px; border-radius:15px; border:1px solid var(--ios-border);">
             <h3 style="margin-top:0;">Account Status</h3>
-            <p id="user-display" style="color:var(--ios-secondary);">Waiting for Auth...</p>
-            <p style="font-size:12px;">Rank: <span style="color:var(--ios-gold);">Apprentice Printer</span></p>
+            <p id="user-display">Checking credentials...</p>
         </div>
     </div>
 
@@ -63,20 +47,28 @@
     </nav>
 
     <script>
-        // 1. PI AUTHENTICATION BRIDGE
-        let currentUser = null;
-        async function initPi() {
+        // FORCED SANDBOX INITIALIZATION
+        const Pi = window.Pi;
+        async function startApp() {
             try {
-                currentUser = await window.Pi.authenticate(['username', 'payments'], (p) => {});
-                document.getElementById('status').innerText = "LINKED: " + currentUser.user.username.toUpperCase();
-                document.getElementById('user-display').innerText = "Logged in as: " + currentUser.user.username;
+                // Initialize with Sandbox enabled for Testnet
+                Pi.init({ version: "2.0", sandbox: true });
+                
+                const user = await Pi.authenticate(['username', 'payments'], (payment) => {
+                    console.log("Incomplete payment found", payment);
+                });
+
+                document.getElementById('status').innerText = "CONNECTED: " + user.user.username.toUpperCase();
+                document.getElementById('user-display').innerText = "Logged in as: " + user.user.username;
             } catch (e) {
-                document.getElementById('status').innerText = "OFFLINE / OPEN IN PI BROWSER";
+                document.getElementById('status').innerText = "CONNECTION ERROR - REFRESH PAGE";
+                console.error(pi_error = e);
             }
         }
-        initPi();
+        
+        // Start the engine
+        startApp();
 
-        // 2. IMAGE & EDITING
         let pos = { x: 0, y: 0 }, sc = 1;
         function handleImage(e) {
             const r = new FileReader();
@@ -96,29 +88,21 @@
             listeners: { move(e) { sc *= (1 + e.ds); transform(e.target); }}
         });
 
-        // 3. PAYMENT FLOW
         function pay() {
-            if (!currentUser) return alert("Please wait for Pi connection...");
-            
-            window.Pi.createPayment({
+            Pi.createPayment({
                 amount: 1.0,
                 memo: "Focus Industrial DTF Order",
-                metadata: { type: "A3_GANG" }
+                metadata: { type: "TEST_ORDER" }
             }, {
-                onReadyForServerApproval: (id) => alert("Order Sent! Payment ID: " + id),
-                onReadyForServerCompletion: () => {
-                    alert("Payment Success! Production Started.");
-                    tab('acc');
-                },
-                onError: (e) => alert("Auth Error: Check develop.pi URL settings.")
+                onReadyForServerApproval: (id) => alert("Waiting for Approval. ID: " + id),
+                onReadyForServerCompletion: () => alert("Success! Test-Pi Received."),
+                onError: (e) => alert("Verify develop.pi configuration.")
             });
         }
 
         function tab(id) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            document.getElementById('n-' + id.split('-')[1]).classList.add('active');
         }
     </script>
 </body>
