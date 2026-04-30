@@ -1,33 +1,95 @@
-        // --- IMPROVED PAYMENT ENGINE ---
-        function pay() {
-            if (!currentUser) return alert("Waiting for connection...");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Focus Lab</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
+        .canvas { width: 100%; aspect-ratio: 1/1; background: #111; border: 1px solid #333; position: relative; overflow: hidden; border-radius: 15px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; }
+        #logo-preview { position: absolute; max-width: 150px; display: none; touch-action: none; z-index: 10; border: 1px dashed #FFD60A; }
+        .btn { background: #FFD60A; color: #000; border: none; padding: 20px; border-radius: 12px; font-weight: bold; width: 100%; font-size: 18px; margin-top: 10px; }
+        #status { color: #FFD60A; font-size: 12px; margin-bottom: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
 
-            console.log("Triggering Wallet...");
-            
-            // We use a try/catch to see if the browser blocks the popup
+    <h2>FOCUS DESIGN LAB</h2>
+    <div id="status">INITIALIZING...</div>
+
+    <div class="canvas" id="canvas">
+        <span style="opacity: 0.2; font-size: 30px; font-weight: 900;">DESIGN AREA</span>
+        <img id="logo-preview" src="">
+    </div>
+
+    <input type="file" id="file-up" hidden onchange="loadImage(event)">
+    <button class="btn" style="background:#222; color:#fff;" onclick="document.getElementById('file-up').click()">UPLOAD DESIGN</button>
+    
+    <button class="btn" id="pay-btn" onclick="startPayment()">PAY 1 TEST-PI</button>
+
+    <script>
+        // 1. Start Pi Connection
+        const Pi = window.Pi;
+        let userConnected = false;
+
+        async function init() {
             try {
-                window.Pi.createPayment({
-                    amount: 1.0,
-                    memo: "Focus Industrial Order #001",
-                    metadata: { orderType: "CUSTOM_PRINT" }
-                }, {
-                    onReadyForServerApproval: function(paymentId) {
-                        console.log("Server Approval Received:", paymentId);
-                        // In Sandbox, we manually tell the SDK to move forward
-                        return axios.post('/api/approve', { paymentId }); 
-                    },
-                    onReadyForServerCompletion: function(paymentId, txid) {
-                        alert("PAYMENT SUCCESS! TX: " + txid);
-                        tab('acc');
-                    },
-                    onCancel: function(paymentId) { console.log("User cancelled"); },
-                    onError: function(error, payment) {
-                        // This is the most important part for debugging the "Freeze"
-                        alert("Wallet Error: " + error.message);
-                    },
-                });
-            } catch (err) {
-                alert("Browser blocked the wallet popup. Please check permissions.");
+                await Pi.init({ version: "2.0", sandbox: true });
+                const auth = await Pi.authenticate(['username', 'payments'], onIncompletePayment);
+                document.getElementById('status').innerText = "CONNECTED: " + auth.user.username.toUpperCase();
+                userConnected = true;
+            } catch (e) {
+                document.getElementById('status').innerText = "LINK ERROR - REFRESH PI BROWSER";
             }
         }
-        
+
+        function onIncompletePayment(payment) { /* Required by Pi SDK */ }
+        init();
+
+        // 2. Handle Image Upload & Moving
+        let pos = { x: 0, y: 0 }, sc = 1;
+        function loadImage(e) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const img = document.getElementById('logo-preview');
+                img.src = reader.result;
+                img.style.display = 'block';
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+
+        interact('#logo-preview').draggable({
+            listeners: { move(e) { 
+                pos.x += e.dx; pos.y += e.dy; 
+                e.target.style.transform = `translate(${pos.x}px, ${pos.y}px) scale(${sc})`; 
+            }}
+        });
+
+        // 3. The Payment Function (The "Unfreezer")
+        function startPayment() {
+            if (!userConnected) {
+                alert("Please wait for 'CONNECTED' status at the top.");
+                return;
+            }
+
+            Pi.createPayment({
+                amount: 1.0,
+                memo: "Focus Industrial Order",
+                metadata: { order: "DTF_PRINT" }
+            }, {
+                onReadyForServerApproval: (id) => {
+                    // This alert proves the button is no longer frozen!
+                    alert("Order Created! Payment ID: " + id);
+                },
+                onReadyForServerCompletion: (id, tx) => {
+                    alert("Success! Order sent to printer.");
+                },
+                onCancel: () => console.log("User closed wallet"),
+                onError: (error) => alert("Wallet Error: " + error.message)
+            });
+        }
+    </script>
+</body>
+</html>
