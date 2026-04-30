@@ -5,117 +5,120 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Focus Clothing V23</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
     <style>
-        :root {
-            --ios-bg: #000; --ios-card: #1C1C1E; --ios-gold: #FFD60A;
-            --ios-label: #FFF; --ios-secondary: #8E8E93; --ios-border: #38383A;
+        :root { --ios-bg: #000; --ios-card: #1C1C1E; --ios-gold: #FFD60A; --ios-border: #38383A; }
+        body { background: var(--ios-bg); color: #FFF; font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 90px; overflow: hidden; }
+        
+        .view { display: none; padding: 60px 20px 20px; height: 100vh; box-sizing: border-box; }
+        .active { display: block; }
+
+        /* THE CANVAS */
+        .canvas-area { 
+            width: 100%; aspect-ratio: 1/1; background: #111; border: 1px solid var(--ios-border); 
+            border-radius: 15px; position: relative; overflow: hidden; touch-action: none;
+            display: flex; align-items: center; justify-content: center;
         }
-        body { background: var(--ios-bg); color: var(--ios-label); font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding-bottom: 80px; }
-
-        /* UI Header */
-        header { padding: 50px 20px 20px; border-bottom: 1px solid var(--ios-border); background: rgba(28,28,30,0.8); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 100; }
-        h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -1px; }
-
-        /* Navigation Views */
-        .view { display: none; padding: 20px; }
-        .view.active { display: block; }
-
-        /* Industrial Components */
-        .card { background: var(--ios-card); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--ios-border); }
-        .btn { background: var(--ios-gold); color: #000; border: none; padding: 18px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; font-size: 16px; margin-top: 10px; }
-
-        /* FIXED DESIGN CANVAS (No External Images) */
-        .canvas-container { 
-            width: 100%; aspect-ratio: 1/1; background: #111; 
-            border: 2px solid var(--ios-border); border-radius: 12px;
-            position: relative; overflow: hidden; display: flex;
-            align-items: center; justify-content: center;
+        #user-image { 
+            position: absolute; max-width: 150px; display: none; 
+            touch-action: none; z-index: 50; border: 1px dashed var(--ios-gold);
         }
-        .canvas-label { color: #333; font-weight: 900; font-size: 30px; position: absolute; pointer-events: none; }
-        #user-image-preview { position: absolute; max-width: 80%; max-height: 80%; z-index: 10; display: none; border: 1px dashed var(--ios-gold); }
 
-        /* Tab Bar */
-        nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #1C1C1E; border-top: 1px solid var(--ios-border); display: flex; justify-content: space-around; align-items: center; padding-bottom: 10px; }
-        .nav-btn { color: var(--ios-secondary); font-size: 11px; font-weight: 600; text-align: center; cursor: pointer; border: none; background: none; }
+        .btn { background: var(--ios-gold); color: #000; border: none; padding: 18px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; margin-top: 15px; font-size: 16px; }
+        
+        nav { position: fixed; bottom: 0; width: 100%; height: 80px; background: #111; border-top: 1px solid var(--ios-border); display: flex; justify-content: space-around; align-items: center; }
+        .nav-btn { color: #8E8E93; font-size: 11px; font-weight: 700; background: none; border: none; }
         .nav-btn.active { color: var(--ios-gold); }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>FOCUS V23</h1>
-        <small style="color: var(--ios-gold); font-weight: 700;">INDUSTRIAL ECOSYSTEM</small>
-    </header>
-
-    <div id="home" class="view active">
-        <div class="card">
-            <h2 style="margin-top:0;">Manufacturing</h2>
-            <p style="color:var(--ios-secondary);">Create high-fidelity DTF Gang Sheets for 1 Test-Pi.</p>
-            <button class="btn" onclick="showTab('lab')">START DESIGN</button>
-        </div>
-    </div>
-
-    <div id="lab" class="view">
-        <div class="canvas-container">
-            <div class="canvas-label">PLACEMENT</div>
-            <img id="user-image-preview" src="">
+    <div id="view-lab" class="view active">
+        <h2 style="margin: 0 0 20px 0;">DESIGN LAB</h2>
+        <div class="canvas-area" id="box">
+            <span style="color: #333; font-weight: 900; font-size: 30px;">FOCUS CANVAS</span>
+            <img id="user-image" src="">
         </div>
         
-        <input type="file" id="imageInput" hidden accept="image/*" onchange="previewImage(event)">
-        <button class="btn" style="background: #333; color: #fff;" onclick="document.getElementById('imageInput').click()">UPLOAD LOGO</button>
-        <button class="btn" onclick="initPayment()">PAY 1 TEST-PI</button>
+        <input type="file" id="up" hidden accept="image/*" onchange="loadFile(event)">
+        <button class="btn" style="background: #333; color: #fff;" onclick="document.getElementById('up').click()">UPLOAD LOGO</button>
+        <button class="btn" onclick="startPiPayment()">PAY 1 TEST-PI</button>
     </div>
 
-    <div id="account" class="view">
-        <div class="card">
-            <h2>Account Details</h2>
-            <p style="color:var(--ios-secondary);">Rank: Apprentice Printer</p>
-            <hr border="0" style="border-top:1px solid #333; margin: 15px 0;">
-            <p>Order History: 0</p>
+    <div id="view-acc" class="view">
+        <h2>ACCOUNT</h2>
+        <div style="background: #1C1C1E; padding: 20px; border-radius: 15px;">
+            <p>Rank: Apprentice Printer</p>
+            <p id="tx-status" style="color: var(--ios-gold);">No Active Orders</p>
         </div>
     </div>
 
     <nav>
-        <button class="nav-btn active" id="btn-home" onclick="showTab('home')">HOME</button>
-        <button class="nav-btn" id="btn-lab" onclick="showTab('lab')">DESIGN</button>
-        <button class="nav-btn" id="btn-account" onclick="showTab('account')">ACCOUNT</button>
+        <button class="nav-btn" onclick="showTab('view-lab')">DESIGN</button>
+        <button class="nav-btn" onclick="showTab('view-acc')">ACCOUNT</button>
     </nav>
 
     <script>
-        // Tab System
-        function showTab(tabId) {
+        // INIT PI SDK
+        try { window.Pi.init({ version: "2.0", sandbox: true }); } catch(e) {}
+
+        function showTab(id) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            document.getElementById('btn-' + tabId).classList.add('active');
+            document.getElementById(id).classList.add('active');
         }
 
-        // Image Preview
-        function previewImage(event) {
+        function loadFile(e) {
             const reader = new FileReader();
-            reader.onload = function(){
-                const output = document.getElementById('user-image-preview');
-                output.src = reader.result;
-                output.style.display = 'block';
+            reader.onload = () => {
+                const img = document.getElementById('user-image');
+                img.src = reader.result;
+                img.style.display = 'block';
+                // Reset position on new load
+                pos = { x: 0, y: 0 }; scale = 1;
+                img.style.transform = `translate(0px, 0px) scale(1)`;
             };
-            reader.readAsDataURL(event.target.files[0]);
+            reader.readAsDataURL(e.target.files[0]);
         }
 
-        // Payment logic
-        function initPayment() {
-            if (!window.Pi) {
-                alert("Please open this inside the Pi Browser.");
-                return;
-            }
-            window.Pi.createPayment({
+        // --- EDITING LOGIC (DRAG & PINCH) ---
+        let pos = { x: 0, y: 0 }, scale = 1;
+        interact('#user-image').draggable({
+            listeners: { move(e) {
+                pos.x += e.dx; pos.y += e.dy;
+                e.target.style.transform = `translate(${pos.x}px, ${pos.y}px) scale(${scale})`;
+            }}
+        }).gesturable({
+            listeners: { move(e) {
+                scale = scale * (1 + e.ds);
+                e.target.style.transform = `translate(${pos.x}px, ${pos.y}px) scale(${scale})`;
+            }}
+        });
+
+        // --- PI PAYMENT HANDSHAKE ---
+        function startPiPayment() {
+            if (!window.Pi) return alert("Please open in Pi Browser!");
+
+            const paymentData = {
                 amount: 1.0,
-                memo: "Focus DTF Print Order",
-                metadata: { type: "A3_GANG_SHEET" }
-            }, {
-                onReadyForServerApproval: (id) => alert("Order Sent: " + id),
-                onReadyForServerCompletion: () => alert("Payment Success! Printing started."),
-                onError: (err) => alert("Error: App not registered in Develop portal.")
-            });
+                memo: "Focus Clothing Custom Print",
+                metadata: { orderId: "Order_" + Date.now() }
+            };
+
+            const callbacks = {
+                onReadyForServerApproval: (paymentId) => {
+                    alert("Payment created! ID: " + paymentId);
+                    // In sandbox, we just proceed
+                },
+                onReadyForServerCompletion: (paymentId, txid) => {
+                    alert("Success! Order placed.");
+                    document.getElementById('tx-status').innerText = "Order in Production";
+                    showTab('view-acc');
+                },
+                onCancel: (id) => console.log("User cancelled"),
+                onError: (error) => alert("App Registration Error. Check your develop.pi settings.")
+            };
+
+            window.Pi.createPayment(paymentData, callbacks);
         }
     </script>
 </body>
