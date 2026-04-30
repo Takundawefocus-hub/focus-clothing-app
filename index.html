@@ -3,288 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Focus Clothing | Ecosystem V23 (iOS)</title>
+    <title>Focus Clothing | Design Lab V23</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <style>
-        /* *** PI-EXCLUSIVE IPHONE DECORATION SYSTEM *** */
         :root {
-            /* iOS Native System Palette */
-            --ios-bg: #000000;          /* System Background */
-            --ios-card: #1C1C1E;        /* Secondary System Background */
-            --ios-green: #32D74B;       /* System Green (Success) */
-            --ios-gold: #FFD60A;        /* Refined System Gold/Accent */
-            --ios-label: #FFFFFF;       /* Primary Label */
-            --ios-secondary: #8E8E93;  /* Secondary Label/Gray */
-            --ios-border: #38383A;     /* System Fill/Separators */
-            
-            /* Typography & Radius */
-            --native-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            --ios-radius: 12px;
-            --ios-button-radius: 10px;
+            --ios-bg: #000000;
+            --ios-card: #1C1C1E;
+            --ios-gold: #FFD60A;
+            --ios-label: #FFFFFF;
+            --ios-secondary: #8E8E93;
+            --ios-border: #38383A;
+            --native-font: -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body { 
-            background-color: var(--ios-bg); 
-            color: var(--ios-label); 
-            font-family: var(--native-font); 
-            margin: 0; 
-            -webkit-font-smoothing: antialiased; 
-            overflow-x: hidden; 
+            background-color: var(--ios-bg); color: var(--ios-label); 
+            font-family: var(--native-font); margin: 0; overflow-x: hidden; 
         }
 
-        /* Frosted Status Bar (with iOS Green Status) */
-        #status-bar { 
-            position: fixed; top: 0; width: 100%; height: 50px; 
-            backdrop-filter: blur(20px); 
-            background-color: rgba(50, 215, 75, 0.2); /* Translucent Green */
-            color: var(--ios-green); 
-            font-weight: 600; 
-            font-size: 14px; 
-            letter-spacing: -0.2px; 
-            display: flex; align-items: center; justify-content: center; 
-            z-index: 1000; 
-            border-bottom: 1px solid rgba(50, 215, 75, 0.1);
-        }
-
-        .container { 
-            padding: 70px 20px 100px 20px; /* Safe areas for nav and status */
-        }
-
-        /* Title Style (iOS Large Header) */
-        .section-title { font-weight: 700; font-size: 20px; margin: 25px 0 10px 0; letter-spacing: -0.5px; color: var(--ios-label); text-align:left; }
-
-        /* Grouped Table View Cards (with Depth) */
+        .container { padding: 20px 20px 100px 20px; }
         .ios-card { 
-            background: var(--ios-card); 
-            border-radius: var(--ios-radius); 
-            padding: 20px; 
-            margin-bottom: 15px; 
-            border: 1px solid var(--ios-border); 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
-            text-align: center;
+            background: var(--ios-card); border-radius: 15px; padding: 20px; 
+            margin-bottom: 20px; border: 1px solid var(--ios-border); 
         }
 
-        .card-meta { font-size: 13px; color: var(--ios-secondary); margin-bottom: 5px; }
-        .card-subtext { color: var(--ios-secondary); font-size: 14px; margin-bottom: 20px; }
-        
-        /* Native Button Styles (Haptic Feedback) */
-        .btn-test { 
-            background: var(--ios-gold); 
-            color: #000; 
-            border: none; 
-            padding: 16px; 
-            border-radius: var(--ios-button-radius); 
-            font-size: 17px; 
-            font-weight: 600; 
-            letter-spacing: -0.4px; 
-            cursor: pointer; 
-            width: 100%; 
-            transition: opacity 0.1s ease-in-out, transform 0.05s ease;
-        }
-        .btn-test:active { opacity: 0.8; transform: scale(0.99); } /* Haptic simulation */
-
-        .btn-sm { 
-            background: rgba(255, 255, 255, 0.05); /* Native Gray Fill */
-            color: var(--ios-label); 
-            border: none; 
-            padding: 10px; 
-            border-radius: 8px; 
-            font-size: 13px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            width: 100%;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .btn-sm:active { background: rgba(255, 255, 255, 0.1); }
-
-        /* Marketplace Grid & Cards (Clean Separation) */
-        .market-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        .market-card { background: var(--ios-card); border-radius: 10px; padding: 15px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.02);}
-        .market-card.active { border-color: var(--ios-gold); background: rgba(255, 214, 10, 0.03); }
-        .market-card img { width: 100%; height: 90px; object-fit: contain; margin-bottom: 10px;}
-        .market-card h3 { font-size: 15px; margin: 0 0 5px 0; font-weight: 600; }
-        .market-card p { font-size: 12px; color: var(--ios-secondary); margin-bottom: 15px; }
-
-        /* Input Native Design */
-        input { 
-            background: rgba(255, 255, 255, 0.05); 
-            border: 1px solid var(--ios-border); 
-            color: var(--ios-label); 
-            padding: 14px; 
-            border-radius: 10px; 
-            width: 90%; 
-            margin-top: 8px;
-            font-family: var(--native-font); font-size: 15px;
+        /* DESIGN LAB OVERLAY */
+        #design-lab {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 3000; padding-top: 50px; text-align: center;
         }
 
-        /* Frosted Bottom Nav Bar (Translucent Vibrancy) */
-        #bottom-nav { 
-            position: fixed; bottom: 0; width: 100%; height: 60px; 
-            backdrop-filter: blur(25px) saturate(180%); 
-            background-color: rgba(28, 28, 30, 0.8); /* Translucent Secondary BG */
-            border-top: 1px solid var(--ios-border); 
-            display: grid; grid-template-columns: repeat(4, 1fr); 
-            align-items: center; text-align: center; z-index: 1000;
+        /* THE MOCKUP CANVAS */
+        #mockup-container {
+            position: relative; width: 300px; height: 350px; 
+            background: url('https://i.ibb.co/F8D84s6/V23-Matte-Utility-Render.webp') center/cover;
+            margin: 0 auto; border-radius: 10px; border: 2px solid var(--ios-border);
+            overflow: hidden;
         }
-        #bottom-nav div { cursor: pointer; color: var(--ios-secondary); font-size: 11px; font-weight: 600; display: flex; flex-direction: column; justify-content: center; height: 100%; }
-        #bottom-nav .active { color: var(--ios-gold); }
-        
-        /* Utility */
-        .badge { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #000; background: var(--ios-gold); text-transform: uppercase; margin-bottom: 12px;}
+
+        #user-upload-preview {
+            position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%);
+            max-width: 120px; max-height: 120px; pointer-events: none; opacity: 0.9;
+        }
+
+        .btn-gold { 
+            background: var(--ios-gold); color: #000; border: none; padding: 15px; 
+            border-radius: 10px; font-weight: 700; width: 100%; cursor: pointer; margin-top: 20px;
+        }
+
+        input[type="file"] { display: none; }
+        .custom-file-upload {
+            display: inline-block; padding: 12px 24px; cursor: pointer;
+            background: #333; border-radius: 10px; font-weight: 600; margin-top: 20px;
+        }
     </style>
 </head>
 <body>
 
-    <div id="status-bar">FOCUS HUB V23 ACTIVE (Pi-ONLY)</div>
-
-    <div class="container">
-        <div class="ios-card" style="padding: 15px;">
-            <button class="btn-sm" id="checkin-btn" onclick="doCheckIn()">DAILY HANDSHAKE (+POINTS)</button>
+    <div id="design-lab">
+        <h2 style="margin-top:0;">INDUSTRIAL DESIGN LAB</h2>
+        <p style="color:var(--ios-secondary); font-size:13px;">Upload your artwork (PNG/High-Res)</p>
+        
+        <div id="mockup-container">
+            <img id="user-upload-preview" src="" style="display:none;">
         </div>
 
-        <div class="section-title">Focus Industrial</div>
-        <div class="ios-card">
-            <span class="badge">MANUFACTURING: TESTNET</span>
-            <p class="card-meta">DTF PRODUCTION HUB</p>
-            <p class="card-subtext">High-Fidelity Prints & Blanks</p>
-            <button class="btn-test" onclick="requestTestPayment()">START GANG SHEET (1 TEST-PI)</button>
-        </div>
+        <label class="custom-file-upload">
+            <input type="file" accept="image/*" onchange="previewImage(event)">
+            CHOOSE ARTWORK
+        </label>
 
-        <div class="section-title">Fashion Market</div>
-        <div class="market-grid">
-            <div class="market-card">
-                <img src="https://via.placeholder.com/100x100?text=Blanks" alt="Focus Blank Tee">
-                <h3>Blanks</h3>
-                <p>Garment Blanks</p>
-                <button class="btn-sm">Shop Vests/Tees</button>
-            </div>
-            <div class="market-card active">
-                <img src="https://via.placeholder.com/100x100?text=DTF+Hub" alt="Focus DTF Service">
-                <h3>DTF</h3>
-                <p>Configure Printing</p>
-                <button class="btn-sm">Order Print</button>
-            </div>
-        </div>
-
-        <div class="section-title">Focus AI</div>
-        <div class="ios-card">
-            <h3>Focus Fashion AI Stylist</h3>
-            <p class="card-subtext">Design inspiration, product curation, and sizing room assistance.</p>
-            <input type="text" id="ai-input" placeholder="Ask AI Assistant...">
-            <button class="btn-sm" onclick="askAiAssistant()" style="margin-top:15px;">ASK AI (V23 DEMO)</button>
+        <div style="padding:0 40px;">
+            <button class="btn-gold" onclick="alert('Proceed to Pi Wallet for 1 Test-Pi?')">APPROVE & PAY (1 Pi)</button>
+            <button onclick="closeLab()" style="background:none; border:none; color:var(--ios-secondary); margin-top:20px; cursor:pointer;">Exit Lab</button>
         </div>
     </div>
 
-    <div id="bottom-nav">
-        <div class="active">HOME</div>
-        <div>MARKET</div>
-        <div>TRENDS</div>
-        <div>ACCOUNT</div>
+    <div class="container" id="home-view">
+        <h1 style="font-weight:800; letter-spacing:-1px;">FOCUS HUB</h1>
+        
+        <div class="ios-card">
+            <h3 style="margin:0;">Manufacturing</h3>
+            <p style="color:var(--ios-secondary); font-size:14px; margin: 5px 0 20px 0;">Start a custom DTF Gang Sheet order.</p>
+            <button class="btn-gold" onclick="openLab()">OPEN DESIGN LAB</button>
+        </div>
+
+        <div class="ios-card" style="background: #111;">
+            <p style="font-size:12px; color:var(--ios-secondary);">CURRENT BALANCE</p>
+            <h2 style="margin:0;">24.50 <span style="color:var(--ios-gold);">π</span></h2>
+        </div>
     </div>
 
     <script>
-        // *** COMPLETE REWRITE: FOCUS ECOSYSTEM V23 (Pi-Exclusive Secure Handshake) ***
+        function openLab() { document.getElementById('design-lab').style.display = 'block'; }
+        function closeLab() { document.getElementById('design-lab').style.display = 'none'; }
 
-        // Retainship Logic (Daily Check-in V23)
-        const CHECKIN_KEY = "focus_last_checkin_ios_v23_pi";
-        const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const lastCheckin = localStorage.getItem(CHECKIN_KEY);
-            const checkinBtn = document.getElementById('checkin-btn');
-
-            if (lastCheckin === todayStr) {
-                checkinBtn.innerText = "Daily Handshake Complete (+POINTS)";
-                checkinBtn.style.opacity = 0.5;
-                checkinBtn.disabled = true;
-                checkinBtn.style.cursor = "default";
-            } else {
-                console.log("Welcome to the Focus Ecosystem (V23 Pi-Exclusive). Perform daily handshake.");
-            }
-        });
-
-        function doCheckIn() {
-            localStorage.setItem(CHECKIN_KEY, todayStr);
-            alert("Psychological retainship complete! Daily handshake verified.");
-            location.reload();
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const output = document.getElementById('user-upload-preview');
+                output.src = reader.result;
+                output.style.display = 'block';
+            };
+            reader.readAsDataURL(event.target.files[0]);
         }
-
-        // --- Demo Functions (Preparing for 20 implementations) ---
-        function askAiAssistant() {
-            alert("Focus Fashion AI Stylist (V23 Demo).\n\nThis infrastructure is ready. AI integration requires a secure server backend and API connection with an LLM provider (OpenAI/Anthropic).");
-        }
-
-        // -------------------------------------------------------------
-        // --- MANDATORY SECURE HANDSHAKE RESTORAL ---
-        // Without this entire block, ACTUAL Pi payments (Testnet) will not function.
-        // Once this code is pushed, you must perform the Mobile Handshake.
-        // -------------------------------------------------------------
-        
-        const statusBar = document.getElementById('status-bar');
-
-        if (window.Pi) {
-            // 1. Initialize for TESTNET
-            window.Pi.init({ version: "2.0", sandbox: true });
-
-            // 2. Request Secure Authentication (The pop-up trigger)
-            window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound)
-            .then(function(auth) {
-                // Success: The app is unlocked. Status bar confirms auth.
-                statusBar.innerText = "FOCUS HUB: ONLINE (authenticated)";
-                statusBar.style.background = "#22c55e"; // Success green
-                console.log("Secure handshake complete. User:", auth.user.username);
-            })
-            .catch(function(err) {
-                // This state triggers the 'Authorize Sandbox' screen.
-                // It means the app is awaiting the code from Chrome (Mobile Handshake).
-                statusBar.innerText = "AWAITING SECURE HANDSHAKE...";
-                statusBar.style.background = "#ef4444"; // Auth pending red
-                console.error("Auth pending. Need secure code input.");
-            });
-        }
-
-        // REQUIRED Clean-up function for any unfinished transactions.
-        function onIncompletePaymentFound(payment) {
-            console.log("Resolving unclosed test transaction...", payment.identifier);
-            // Later you will send payment.identifier to your backend to /complete it.
-        }
-
-        // -------------------------------------------------------------
-        // --- ACTIVATED TESTNET PAYMENT FUNCTION ---
-        // Tapping 'START GANG SHEET' triggers this native flow.
-        // -------------------------------------------------------------
-        
-        function requestTestPayment() {
-            // Check if authentication succeeded first (simple demo check)
-            if (statusBar.innerText !== "FOCUS HUB: ONLINE (authenticated)") {
-                alert("Authorization required.\n\nYou must perform the mobile handshake (enter the code from Chrome) before payments can be executed.");
-                return;
-            }
-
-            // Execute actual window.Pi.createPayment flow (Testnet)
-            window.Pi.createPayment({
-                amount: 1, // 1 Test-Pi
-                memo: "Focus Clothing Industrial DTF - Gang Sheet (A3)",
-                metadata: { productId: "DTF_GANG_001", size: "A3" }
-            }, {
-                // The native flow handle approval and completion.
-                onReadyForServerApproval: (paymentId) => {
-                    console.log("Test Payment Pending Server Approval. ID:", paymentId);
-                    // In production, send paymentId to your backend here to call /approve.
-                },
-                onReadyForServerCompletion: (paymentId, txid) => {
-                    alert("Order Placed Successfully!\nTransaction ID: " + txid);
-                },
-                onCancel: (paymentId) => {
-                    console.log("Test Payment Cancelled by user.");
-                },
-                onError: (error, paymentId) => {
-                    alert("Payment Error: Please check your Test-Pi balance.");
-                    console.error("Payment Error Data:", error, paymentId);
-                }
-            });
-        }
-
     </script>
 </body>
 </html>
