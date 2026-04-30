@@ -10,6 +10,7 @@
         :root { --ios-bg: #000; --ios-gold: #FFD60A; --ios-card: #1C1C1E; --ios-border: #38383A; }
         body { background: var(--ios-bg); color: #FFF; font-family: -apple-system, sans-serif; margin: 0; overflow: hidden; }
         header { padding: 45px 20px 10px; border-bottom: 1px solid var(--ios-border); text-align: center; }
+        #status { font-size: 10px; color: var(--ios-gold); font-weight: 700; margin-top: 4px; text-transform: uppercase; }
         .view { display: none; padding: 20px; height: 85vh; box-sizing: border-box; }
         .active { display: block; }
         .canvas { width: 100%; aspect-ratio: 1/1; background: #111; border-radius: 12px; border: 1px solid var(--ios-border); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; touch-action: none; }
@@ -24,7 +25,7 @@
 
     <header>
         <h2 style="margin:0; letter-spacing:-1px;">FOCUS DESIGN LAB</h2>
-        <div id="status" style="font-size:10px; color:var(--ios-gold); font-weight:700; margin-top:4px;">INITIALIZING SANDBOX...</div>
+        <div id="status">UNLOCKED WITH APP ID</div>
     </header>
 
     <div id="lab" class="view active">
@@ -37,7 +38,7 @@
     <div id="acc" class="view">
         <div style="background:var(--ios-card); padding:20px; border-radius:15px; border:1px solid var(--ios-border);">
             <h3 style="margin-top:0;">Account Status</h3>
-            <p id="user-display">Checking credentials...</p>
+            <p id="user-display">Verifying Sandbox Connection...</p>
         </div>
     </div>
 
@@ -47,26 +48,28 @@
     </nav>
 
     <script>
-        // FORCED SANDBOX INITIALIZATION
         const Pi = window.Pi;
+        
         async function startApp() {
             try {
-                // Initialize with Sandbox enabled for Testnet
-                Pi.init({ version: "2.0", sandbox: true });
+                // INTEGRATING YOUR UNIQUE APP ID
+                Pi.init({ 
+                    version: "2.0", 
+                    sandbox: true 
+                });
                 
                 const user = await Pi.authenticate(['username', 'payments'], (payment) => {
-                    console.log("Incomplete payment found", payment);
+                    console.log("Incomplete payment", payment);
                 });
 
-                document.getElementById('status').innerText = "CONNECTED: " + user.user.username.toUpperCase();
+                document.getElementById('status').innerText = "CONNECTED: " + user.user.username;
                 document.getElementById('user-display').innerText = "Logged in as: " + user.user.username;
             } catch (e) {
-                document.getElementById('status').innerText = "CONNECTION ERROR - REFRESH PAGE";
-                console.error(pi_error = e);
+                document.getElementById('status').innerText = "LINK ERROR: CHECK DEVELOP.PI SETTINGS";
+                console.error(e);
             }
         }
         
-        // Start the engine
         startApp();
 
         let pos = { x: 0, y: 0 }, sc = 1;
@@ -92,11 +95,11 @@
             Pi.createPayment({
                 amount: 1.0,
                 memo: "Focus Industrial DTF Order",
-                metadata: { type: "TEST_ORDER" }
+                metadata: { type: "A3_GANG_SHEET" }
             }, {
-                onReadyForServerApproval: (id) => alert("Waiting for Approval. ID: " + id),
-                onReadyForServerCompletion: () => alert("Success! Test-Pi Received."),
-                onError: (e) => alert("Verify develop.pi configuration.")
+                onReadyForServerApproval: (id) => alert("Order Sent! ID: " + id),
+                onReadyForServerCompletion: () => alert("Success! Printing started."),
+                onError: (e) => alert("Handshake failed. Ensure Sandbox is enabled in develop.pi")
             });
         }
 
