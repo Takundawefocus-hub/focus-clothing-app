@@ -3,122 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Focus Clothing V23</title>
+    <title>Focus V23 | Industrial</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
     <style>
-        :root { --ios-bg: #000; --ios-card: #1C1C1E; --ios-gold: #FFD60A; --ios-border: #38383A; }
-        body { background: var(--ios-bg); color: #FFF; font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 90px; overflow: hidden; }
+        :root { --ios-bg: #000; --ios-gold: #FFD60A; --ios-card: #1C1C1E; --ios-border: #38383A; }
+        body { background: var(--ios-bg); color: #FFF; font-family: -apple-system, sans-serif; margin: 0; overflow: hidden; }
         
-        .view { display: none; padding: 60px 20px 20px; height: 100vh; box-sizing: border-box; }
+        /* Layout */
+        header { padding: 40px 20px 10px; border-bottom: 1px solid var(--ios-border); text-align: center; }
+        .view { display: none; padding: 20px; height: 80vh; overflow-y: auto; }
         .active { display: block; }
 
-        /* THE CANVAS */
-        .canvas-area { 
-            width: 100%; aspect-ratio: 1/1; background: #111; border: 1px solid var(--ios-border); 
-            border-radius: 15px; position: relative; overflow: hidden; touch-action: none;
-            display: flex; align-items: center; justify-content: center;
+        /* Industrial Canvas */
+        .canvas { 
+            width: 100%; aspect-ratio: 1/1; background: #111; border-radius: 12px; 
+            border: 1px solid var(--ios-border); position: relative; overflow: hidden;
+            display: flex; align-items: center; justify-content: center; touch-action: none;
         }
-        #user-image { 
-            position: absolute; max-width: 150px; display: none; 
-            touch-action: none; z-index: 50; border: 1px dashed var(--ios-gold);
-        }
+        #logo-preview { position: absolute; max-width: 150px; display: none; touch-action: none; z-index: 100; border: 1px dashed var(--ios-gold); }
 
-        .btn { background: var(--ios-gold); color: #000; border: none; padding: 18px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; margin-top: 15px; font-size: 16px; }
+        /* Interaction Elements */
+        .btn { background: var(--ios-gold); color: #000; border: none; padding: 18px; border-radius: 12px; font-weight: 800; width: 100%; margin-top: 15px; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 214, 10, 0.2); }
+        .btn:active { transform: scale(0.98); opacity: 0.8; }
         
         nav { position: fixed; bottom: 0; width: 100%; height: 80px; background: #111; border-top: 1px solid var(--ios-border); display: flex; justify-content: space-around; align-items: center; }
-        .nav-btn { color: #8E8E93; font-size: 11px; font-weight: 700; background: none; border: none; }
-        .nav-btn.active { color: var(--ios-gold); }
+        .nav-item { color: #8E8E93; font-size: 11px; font-weight: 700; cursor: pointer; }
+        .nav-item.active { color: var(--ios-gold); }
     </style>
 </head>
 <body>
 
-    <div id="view-lab" class="view active">
-        <h2 style="margin: 0 0 20px 0;">DESIGN LAB</h2>
-        <div class="canvas-area" id="box">
-            <span style="color: #333; font-weight: 900; font-size: 30px;">FOCUS CANVAS</span>
-            <img id="user-image" src="">
+    <header>
+        <h2 style="margin:0; letter-spacing:-1px;">DESIGN LAB</h2>
+        <div id="user-tag" style="font-size:10px; color:var(--ios-gold); margin-top:5px;">Connecting to Pi...</div>
+    </header>
+
+    <div id="lab" class="view active">
+        <div class="canvas" id="canvas-root">
+            <span style="color:#222; font-weight:900; font-size:40px;">FOCUS</span>
+            <img id="logo-preview" src="">
         </div>
         
-        <input type="file" id="up" hidden accept="image/*" onchange="loadFile(event)">
-        <button class="btn" style="background: #333; color: #fff;" onclick="document.getElementById('up').click()">UPLOAD LOGO</button>
-        <button class="btn" onclick="startPiPayment()">PAY 1 TEST-PI</button>
+        <input type="file" id="fileInput" hidden onchange="handleImage(event)">
+        <button class="btn" style="background:#222; color:#fff;" onclick="document.getElementById('fileInput').click()">UPLOAD ARTWORK</button>
+        <button class="btn" id="payBtn" onclick="pay()">PAY 1 TEST-PI</button>
     </div>
 
-    <div id="view-acc" class="view">
-        <h2>ACCOUNT</h2>
-        <div style="background: #1C1C1E; padding: 20px; border-radius: 15px;">
-            <p>Rank: Apprentice Printer</p>
-            <p id="tx-status" style="color: var(--ios-gold);">No Active Orders</p>
+    <div id="acc" class="view">
+        <h3>INDUSTRIAL ACCOUNT</h3>
+        <div style="background:var(--ios-card); padding:20px; border-radius:12px; border:1px solid var(--ios-border);">
+            <p id="pi-name">User: Not Logged In</p>
+            <p>Status: Apprentice Printer</p>
         </div>
     </div>
 
     <nav>
-        <button class="nav-btn" onclick="showTab('view-lab')">DESIGN</button>
-        <button class="nav-btn" onclick="showTab('view-acc')">ACCOUNT</button>
+        <div class="nav-item active" onclick="tab('lab')">DESIGN</div>
+        <div class="nav-item" onclick="tab('acc')">ACCOUNT</div>
     </nav>
 
     <script>
-        // INIT PI SDK
-        try { window.Pi.init({ version: "2.0", sandbox: true }); } catch(e) {}
+        // 1. INITIALIZE PI SDK & AUTHENTICATE
+        const Pi = window.Pi;
+        let currentUser = null;
 
-        function showTab(id) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+        async function initPi() {
+            try {
+                const scopes = ['username', 'payments'];
+                function onIncompletePaymentFound(payment) { /* Handle incomplete payments */ }
+
+                currentUser = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                document.getElementById('user-tag').innerText = "LINKED: " + currentUser.user.username;
+                document.getElementById('pi-name').innerText = "User: " + currentUser.user.username;
+            } catch (err) {
+                document.getElementById('user-tag').innerText = "AUTH FAILED: OPEN IN PI BROWSER";
+                console.error(err);
+            }
         }
+        initPi();
 
-        function loadFile(e) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                const img = document.getElementById('user-image');
-                img.src = reader.result;
-                img.style.display = 'block';
-                // Reset position on new load
-                pos = { x: 0, y: 0 }; scale = 1;
-                img.style.transform = `translate(0px, 0px) scale(1)`;
+        // 2. IMAGE & EDITING LOGIC
+        let pos = { x: 0, y: 0 }, sc = 1;
+        function handleImage(e) {
+            const r = new FileReader();
+            r.onload = () => {
+                const img = document.getElementById('logo-preview');
+                img.src = r.result; img.style.display = 'block';
+                pos = { x: 0, y: 0 }; sc = 1; updateStyle(img);
             };
-            reader.readAsDataURL(e.target.files[0]);
+            r.readAsDataURL(e.target.files[0]);
         }
 
-        // --- EDITING LOGIC (DRAG & PINCH) ---
-        let pos = { x: 0, y: 0 }, scale = 1;
-        interact('#user-image').draggable({
-            listeners: { move(e) {
-                pos.x += e.dx; pos.y += e.dy;
-                e.target.style.transform = `translate(${pos.x}px, ${pos.y}px) scale(${scale})`;
-            }}
+        function updateStyle(el) { el.style.transform = `translate(${pos.x}px, ${pos.y}px) scale(${sc})`; }
+
+        interact('#logo-preview').draggable({
+            listeners: { move(e) { pos.x += e.dx; pos.y += e.dy; updateStyle(e.target); }}
         }).gesturable({
-            listeners: { move(e) {
-                scale = scale * (1 + e.ds);
-                e.target.style.transform = `translate(${pos.x}px, ${pos.y}px) scale(${scale})`;
-            }}
+            listeners: { move(e) { sc *= (1 + e.ds); updateStyle(e.target); }}
         });
 
-        // --- PI PAYMENT HANDSHAKE ---
-        function startPiPayment() {
-            if (!window.Pi) return alert("Please open in Pi Browser!");
+        // 3. PAYMENT LOGIC
+        function pay() {
+            if (!currentUser) return alert("Please wait for Pi Auth to complete...");
 
-            const paymentData = {
+            Pi.createPayment({
                 amount: 1.0,
-                memo: "Focus Clothing Custom Print",
-                metadata: { orderId: "Order_" + Date.now() }
-            };
-
-            const callbacks = {
-                onReadyForServerApproval: (paymentId) => {
-                    alert("Payment created! ID: " + paymentId);
-                    // In sandbox, we just proceed
+                memo: "Industrial Print Order #"+Math.floor(Math.random()*1000),
+                metadata: { item: "DTF_A3_SHEET" }
+            }, {
+                onReadyForServerApproval: (pid) => { 
+                    alert("Order Pending: " + pid); 
+                    // In a real app, you'd send 'pid' to your backend here
                 },
-                onReadyForServerCompletion: (paymentId, txid) => {
-                    alert("Success! Order placed.");
-                    document.getElementById('tx-status').innerText = "Order in Production";
-                    showTab('view-acc');
+                onReadyForServerCompletion: (pid, tx) => {
+                    alert("SUCCESS! 1 Pi Received. Production started.");
+                    tab('acc');
                 },
-                onCancel: (id) => console.log("User cancelled"),
-                onError: (error) => alert("App Registration Error. Check your develop.pi settings.")
-            };
+                onCancel: (pid) => console.log("User cancelled"),
+                onError: (err) => alert("Payment Error. Ensure app is registered in develop.pi")
+            });
+        }
 
-            window.Pi.createPayment(paymentData, callbacks);
+        function tab(id) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
         }
     </script>
 </body>
