@@ -3,175 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Focus Clothing | Design Canvas V23</title>
+    <title>Focus Clothing V23</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
     <style>
-        /* *** MASTER INTEGRATION (Pi Focus + iPhone Decoration) *** */
         :root {
-            --ios-bg: #000;
-            --ios-card: #1C1C1E;
-            --ios-gold: #FFD60A;
-            --ios-label: #FFF;
-            --ios-secondary: #8E8E93;
-            --ios-border: #38383A;
-            --native-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            --ios-radius: 12px;
+            --ios-bg: #000; --ios-card: #1C1C1E; --ios-gold: #FFD60A;
+            --ios-label: #FFF; --ios-secondary: #8E8E93; --ios-border: #38383A;
         }
+        body { background: var(--ios-bg); color: var(--ios-label); font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding-bottom: 80px; }
 
-        body { background: var(--ios-bg); color: var(--ios-label); font-family: var(--native-font); margin: 0; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+        /* UI Header */
+        header { padding: 50px 20px 20px; border-bottom: 1px solid var(--ios-border); background: rgba(28,28,30,0.8); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 100; }
+        h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -1px; }
 
-        /* [Bypass Mode Status] We continue to bypass complex auth for visual verification */
-        #status-bar { position: fixed; top: 0; width: 100%; height: 50px; backdrop-filter: blur(20px); background: rgba(50, 215, 75, 0.1); color: #32D74B; display: flex; align-items: center; justify-content: center; z-index: 1000; font-size: 13px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        /* Navigation Views */
+        .view { display: none; padding: 20px; }
+        .view.active { display: block; }
 
-        .container { padding: 70px 20px 100px 20px; text-align: center; }
-        .ios-card { background: var(--ios-card); border-radius: var(--ios-radius); padding: 20px; margin-bottom: 20px; border: 1px solid var(--ios-border); text-align:left;}
+        /* Industrial Components */
+        .card { background: var(--ios-card); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--ios-border); }
+        .btn { background: var(--ios-gold); color: #000; border: none; padding: 18px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; font-size: 16px; margin-top: 10px; }
 
-        .btn-gold { background: var(--ios-gold); color: #000; border: none; padding: 16px; border-radius: 10px; font-size: 17px; font-weight: 700; width: 100%; cursor: pointer; }
-        .btn-gold:active { opacity: 0.8; transform: scale(0.99); }
-
-        /* [Implementation #2] THE INTEGRATED DESIGN CANVAS */
-        #canvas-view { display:none; text-align:center; padding-top: 60px;}
-        #file-up { display:none; } /* Hidden default uploader */
-
-        /* Matte-Black Blank Render Reference */
-        #canvas-bg { 
-            position: relative; width: 300px; height: 350px;
-            background-color: #111; /* Temporary while asset links fix */
-            background-image: url('https://i.ibb.co/F8D84s6/V23-Matte-Utility-Render.webp');
-            background-size: cover; background-position: center;
-            margin: 20px auto; border-radius: var(--ios-radius); border: 2px solid var(--ios-gold);
-            overflow: hidden; touch-action: none;
+        /* FIXED DESIGN CANVAS (No External Images) */
+        .canvas-container { 
+            width: 100%; aspect-ratio: 1/1; background: #111; 
+            border: 2px solid var(--ios-border); border-radius: 12px;
+            position: relative; overflow: hidden; display: flex;
+            align-items: center; justify-content: center;
         }
+        .canvas-label { color: #333; font-weight: 900; font-size: 30px; position: absolute; pointer-events: none; }
+        #user-image-preview { position: absolute; max-width: 80%; max-height: 80%; z-index: 10; display: none; border: 1px dashed var(--ios-gold); }
 
-        /* [Implementation #23] MANIPULATABLE GRAPHIC */
-        #user-logo {
-            position: absolute; top: 30%; left: 30%;
-            max-width: 150px; max-height: 150px; opacity: 0.9;
-            transform: translate(0px, 0px) scale(1) rotate(0deg);
-            transform-origin: center center;
-            cursor: move; touch-action: none; display:none;
-        }
-
-        /* Interactive Bottom Nav (Tied to 20 implementations) */
-        #bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; backdrop-filter: blur(25px); background: rgba(28,28,30,0.8); border-top: 1px solid var(--ios-border); display: grid; grid-template-columns: repeat(4, 1fr); align-items: center; text-align: center; z-index: 1000; }
-        #bottom-nav div { color: var(--ios-secondary); font-size: 10px; font-weight: 600; cursor: pointer; }
-        #bottom-nav .active { color: var(--ios-gold); }
-
+        /* Tab Bar */
+        nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #1C1C1E; border-top: 1px solid var(--ios-border); display: flex; justify-content: space-around; align-items: center; padding-bottom: 10px; }
+        .nav-btn { color: var(--ios-secondary); font-size: 11px; font-weight: 600; text-align: center; cursor: pointer; border: none; background: none; }
+        .nav-btn.active { color: var(--ios-gold); }
     </style>
 </head>
 <body>
 
-    <div id="status-bar">FOCUS INDUSTRIAL ECOSYSTEM V23 (Bypass Active)</div>
+    <header>
+        <h1>FOCUS V23</h1>
+        <small style="color: var(--ios-gold); font-weight: 700;">INDUSTRIAL ECOSYSTEM</small>
+    </header>
 
-    <div class="container" id="home-view">
-        <h1 style="font-weight:900; letter-spacing:-1.5px; margin:0 0 5px 0;">FOCUS HUB</h1>
-        <p style="color:var(--ios-secondary); font-size:14px; margin:0 0 30px 0;">Integrated Manufacturing & Media</p>
+    <div id="home" class="view active">
+        <div class="card">
+            <h2 style="margin-top:0;">Manufacturing</h2>
+            <p style="color:var(--ios-secondary);">Create high-fidelity DTF Gang Sheets for 1 Test-Pi.</p>
+            <button class="btn" onclick="showTab('lab')">START DESIGN</button>
+        </div>
+    </div>
+
+    <div id="lab" class="view">
+        <div class="canvas-container">
+            <div class="canvas-label">PLACEMENT</div>
+            <img id="user-image-preview" src="">
+        </div>
         
-        <div class="ios-card">
-            <h3>Focus Industrial</h3>
-            <p style="color:var(--ios-secondary); font-size:13px; margin: 0 0 20px 0;">Configure your 1 Test-Pi DTF Gang Sheet (A3)</p>
-            <button class="btn-gold" onclick="openCanvasView()">OPEN DESIGN LAB</button>
+        <input type="file" id="imageInput" hidden accept="image/*" onchange="previewImage(event)">
+        <button class="btn" style="background: #333; color: #fff;" onclick="document.getElementById('imageInput').click()">UPLOAD LOGO</button>
+        <button class="btn" onclick="initPayment()">PAY 1 TEST-PI</button>
+    </div>
+
+    <div id="account" class="view">
+        <div class="card">
+            <h2>Account Details</h2>
+            <p style="color:var(--ios-secondary);">Rank: Apprentice Printer</p>
+            <hr border="0" style="border-top:1px solid #333; margin: 15px 0;">
+            <p>Order History: 0</p>
         </div>
     </div>
 
-    <div class="container" id="canvas-view">
-        <h2 style="font-weight:800; letter-spacing:-1px;">INDUSTRIAL DESIGN LAB</h2>
-        <p style="color:var(--ios-secondary); font-size:13px; margin: 0 0 10px 0;">Position, Resize, & Rotate your graphic</p>
-        
-        <div id="canvas-bg">
-            <img id="user-logo" src="">
-        </div>
-
-        <div style="padding:10px 40px; text-align:center;">
-            <input type="file" id="file-up" accept="image/*" onchange="previewUserLogo(event)">
-            <button class="btn-gold" style="background:#333; color:white; padding:10px; font-size:14px; width:auto;" onclick="document.getElementById('file-up').click()">CHOOSE ARTWORK</button>
-        </div>
-
-        <div style="padding:10px 40px; text-align:center;">
-            <button class="btn-gold" onclick="proceedToPayment()">APPROVE & PAY (1 TEST-PI)</button>
-            <p onclick="closeCanvasView()" style="color:var(--ios-secondary); margin-top:20px; font-size:14px; cursor:pointer;">Exit Lab</p>
-        </div>
-    </div>
-
-    <div id="bottom-nav">
-        <div class="active" onclick="closeCanvasView()">HOME</div>
-        <div>MARKET</div>
-        <div>TRENDS</div>
-        <div onclick="alert('Balance: 24.5 Test-Pi')">ACCOUNT</div>
-    </div>
+    <nav>
+        <button class="nav-btn active" id="btn-home" onclick="showTab('home')">HOME</button>
+        <button class="nav-btn" id="btn-lab" onclick="showTab('lab')">DESIGN</button>
+        <button class="nav-btn" id="btn-account" onclick="showTab('account')">ACCOUNT</button>
+    </nav>
 
     <script>
-        // *** PHASE 1: ECOSYSTEM VISUAL INFRASTRUCTURE ***
-
-        // Initialize Pi SDK (Bypass Mode Active)
-        if (window.Pi) {
-            window.Pi.init({ version: "2.0", sandbox: true });
+        // Tab System
+        function showTab(tabId) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
         }
 
-        // --- View Control ---
-        const homeView = document.getElementById('home-view');
-        const canvasView = document.getElementById('canvas-view');
-
-        function openCanvasView() { homeView.style.display = 'none'; canvasView.style.display = 'block'; }
-        function closeCanvasView() { homeView.style.display = 'block'; canvasView.style.display = 'none'; }
-
-        // --- [Implementation #2] Artwork Loader ---
-        function previewUserLogo(event) {
+        // Image Preview
+        function previewImage(event) {
             const reader = new FileReader();
-            reader.onload = function() {
-                const logo = document.getElementById('user-logo');
-                logo.src = reader.result;
-                logo.style.display = 'block';
-                resetLogoPosition(); // Set initial native transform values
+            reader.onload = function(){
+                const output = document.getElementById('user-image-preview');
+                output.src = reader.result;
+                output.style.display = 'block';
             };
             reader.readAsDataURL(event.target.files[0]);
         }
 
-        // Payment Demo
-        function proceedToPayment() {
-            alert("Focus Hub (Bypass Mode).\n\nTransaction pending: DTF A3 Gang Sheet for 1 Test-Pi.\n\nTo move to Step 2, restore window.Pi.createPayment flow.");
-        }
-
-        // -------------------------------------------------------------
-        // --- [Implementation #23] CANVAS MANIPULATION ENGINE ---
-        // Uses interact.js for pinch-zoom, rotate, and drag.
-        // -------------------------------------------------------------
-        
-        let position = { x: 0, y: 0 };
-        let scale = 1;
-        let angle = 0;
-
-        function resetLogoPosition() {
-            position = { x: 0, y: 0 }; scale = 1; angle = 0;
-            updateLogoTransform();
-        }
-
-        function updateLogoTransform() {
-            const logo = document.getElementById('user-logo');
-            logo.style.transform = `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${angle}deg)`;
-        }
-
-        interact('#canvas-bg')
-            .gesturable({
-                listeners: {
-                    move(event) {
-                        scale = scale * (1 + event.ds);
-                        angle += event.da;
-                        updateLogoTransform();
-                    }
-                }
-            })
-            .draggable({
-                listeners: {
-                    move(event) {
-                        position.x += event.dx;
-                        position.y += event.dy;
-                        updateLogoTransform();
-                    }
-                }
+        // Payment logic
+        function initPayment() {
+            if (!window.Pi) {
+                alert("Please open this inside the Pi Browser.");
+                return;
+            }
+            window.Pi.createPayment({
+                amount: 1.0,
+                memo: "Focus DTF Print Order",
+                metadata: { type: "A3_GANG_SHEET" }
+            }, {
+                onReadyForServerApproval: (id) => alert("Order Sent: " + id),
+                onReadyForServerCompletion: () => alert("Payment Success! Printing started."),
+                onError: (err) => alert("Error: App not registered in Develop portal.")
             });
-
+        }
     </script>
 </body>
 </html>
