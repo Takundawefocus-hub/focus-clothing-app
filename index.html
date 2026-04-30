@@ -1,113 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Focus V23 | Industrial</title>
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
-    <style>
-        :root { --ios-bg: #000; --ios-gold: #FFD60A; --ios-card: #1C1C1E; --ios-border: #38383A; }
-        body { background: var(--ios-bg); color: #FFF; font-family: -apple-system, sans-serif; margin: 0; overflow: hidden; }
-        header { padding: 45px 20px 10px; border-bottom: 1px solid var(--ios-border); text-align: center; }
-        #status { font-size: 10px; color: var(--ios-gold); font-weight: 700; margin-top: 4px; text-transform: uppercase; }
-        .view { display: none; padding: 20px; height: 85vh; box-sizing: border-box; }
-        .active { display: block; }
-        .canvas { width: 100%; aspect-ratio: 1/1; background: #111; border-radius: 12px; border: 1px solid var(--ios-border); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; touch-action: none; }
-        #logo-preview { position: absolute; max-width: 150px; display: none; touch-action: none; z-index: 50; border: 1px dashed var(--ios-gold); }
-        .btn { background: var(--ios-gold); color: #000; border: none; padding: 18px; border-radius: 12px; font-weight: 800; width: 100%; margin-top: 15px; font-size: 16px; }
-        nav { position: fixed; bottom: 0; width: 100%; height: 85px; background: #111; border-top: 1px solid var(--ios-border); display: flex; justify-content: space-around; align-items: center; padding-bottom: 15px; }
-        .nav-item { color: #8E8E93; font-size: 11px; font-weight: 700; cursor: pointer; border: none; background: none; }
-        .nav-item.active { color: var(--ios-gold); }
-    </style>
-</head>
-<body>
+        // --- IMPROVED PAYMENT ENGINE ---
+        function pay() {
+            if (!currentUser) return alert("Waiting for connection...");
 
-    <header>
-        <h2 style="margin:0; letter-spacing:-1px;">FOCUS DESIGN LAB</h2>
-        <div id="status">INITIATING SECURE LINK...</div>
-    </header>
-
-    <div id="lab" class="view active">
-        <div class="canvas"><img id="logo-preview" src=""></div>
-        <input type="file" id="up" hidden onchange="handleImage(event)">
-        <button class="btn" style="background:#222; color:#fff;" onclick="document.getElementById('up').click()">CHOOSE ARTWORK</button>
-        <button class="btn" id="payBtn" onclick="pay()">PAY 1 TEST-PI</button>
-    </div>
-
-    <div id="acc" class="view">
-        <div style="background:var(--ios-card); padding:20px; border-radius:15px; border:1px solid var(--ios-border);">
-            <h3 style="margin-top:0;">Account Status</h3>
-            <p id="user-display">Verifying Sandbox Connection...</p>
-        </div>
-    </div>
-
-    <nav>
-        <button class="nav-item active" id="n-lab" onclick="tab('lab')">DESIGN</button>
-        <button class="nav-item" id="n-acc" onclick="tab('acc')">ACCOUNT</button>
-    </nav>
-
-    <script>
-        const Pi = window.Pi;
-        
-        async function startApp() {
+            console.log("Triggering Wallet...");
+            
+            // We use a try/catch to see if the browser blocks the popup
             try {
-                // YOUR UNIQUE APP ID
-                await Pi.init({ 
-                    version: "2.0", 
-                    sandbox: true 
+                window.Pi.createPayment({
+                    amount: 1.0,
+                    memo: "Focus Industrial Order #001",
+                    metadata: { orderType: "CUSTOM_PRINT" }
+                }, {
+                    onReadyForServerApproval: function(paymentId) {
+                        console.log("Server Approval Received:", paymentId);
+                        // In Sandbox, we manually tell the SDK to move forward
+                        return axios.post('/api/approve', { paymentId }); 
+                    },
+                    onReadyForServerCompletion: function(paymentId, txid) {
+                        alert("PAYMENT SUCCESS! TX: " + txid);
+                        tab('acc');
+                    },
+                    onCancel: function(paymentId) { console.log("User cancelled"); },
+                    onError: function(error, payment) {
+                        // This is the most important part for debugging the "Freeze"
+                        alert("Wallet Error: " + error.message);
+                    },
                 });
-                
-                const user = await Pi.authenticate(['username', 'payments'], (payment) => {
-                    console.log("Incomplete payment found", payment);
-                });
-
-                document.getElementById('status').innerText = "CONNECTED: " + user.user.username;
-                document.getElementById('user-display').innerText = "Logged in as: " + user.user.username;
-            } catch (e) {
-                // This will help us see the exact reason for the 'Link Error'
-                document.getElementById('status').innerText = "LINK ERROR: " + e.message;
-                console.error(e);
+            } catch (err) {
+                alert("Browser blocked the wallet popup. Please check permissions.");
             }
         }
         
-        startApp();
-
-        let pos = { x: 0, y: 0 }, sc = 1;
-        function handleImage(e) {
-            const r = new FileReader();
-            r.onload = () => {
-                const img = document.getElementById('logo-preview');
-                img.src = r.result; img.style.display = 'block';
-                pos = { x: 0, y: 0 }; sc = 1; transform(img);
-            };
-            r.readAsDataURL(e.target.files[0]);
-        }
-
-        function transform(el) { el.style.transform = `translate(${pos.x}px, ${pos.y}px) scale(${sc})`; }
-
-        interact('#logo-preview').draggable({
-            listeners: { move(e) { pos.x += e.dx; pos.y += e.dy; transform(e.target); }}
-        }).gesturable({
-            listeners: { move(e) { sc *= (1 + e.ds); transform(e.target); }}
-        });
-
-        function pay() {
-            Pi.createPayment({
-                amount: 1.0,
-                memo: "Focus Industrial Order",
-                metadata: { type: "A3_GANG" }
-            }, {
-                onReadyForServerApproval: (id) => alert("Order Sent! ID: " + id),
-                onReadyForServerCompletion: () => alert("Success! Test-Pi Received."),
-                onError: (e) => alert("Payment error: " + e.message)
-            });
-        }
-
-        function tab(id) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
-    </script>
-</body>
-</html>
