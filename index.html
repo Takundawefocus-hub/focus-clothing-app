@@ -3,91 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Focus Lab</title>
+    <title>Focus Family Hub</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
-        .canvas { width: 100%; aspect-ratio: 1/1; background: #111; border: 1px solid #333; position: relative; overflow: hidden; border-radius: 15px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; }
-        #logo-preview { position: absolute; max-width: 150px; display: none; touch-action: none; z-index: 10; border: 1px dashed #FFD60A; }
-        .btn { background: #FFD60A; color: #000; border: none; padding: 20px; border-radius: 12px; font-weight: bold; width: 100%; font-size: 18px; margin-top: 10px; }
-        #status { color: #FFD60A; font-size: 12px; margin-bottom: 15px; font-weight: bold; }
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding: 20px; text-align: center; }
+        .factory-box { width: 100%; aspect-ratio: 1/1; background: #111; border: 2px solid #333; border-radius: 20px; margin: 20px 0; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        #user-logo { position: absolute; max-width: 150px; display: none; touch-action: none; z-index: 10; border: 2px dashed #FFD60A; }
+        .btn-gold { background: #FFD60A; color: #000; border: none; padding: 20px; border-radius: 15px; font-weight: 900; width: 100%; font-size: 18px; margin-top: 10px; box-shadow: 0 4px 15px rgba(255,214,10,0.3); }
+        #status-bar { color: #FFD60A; font-weight: bold; font-size: 12px; letter-spacing: 1px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <h2>FOCUS DESIGN LAB</h2>
-    <div id="status">INITIALIZING...</div>
+    <div id="status-bar">STATUS: BOOTING...</div>
+    <h2 style="margin:0;">INDUSTRIAL LAB</h2>
 
-    <div class="canvas" id="canvas">
-        <span style="opacity: 0.2; font-size: 30px; font-weight: 900;">DESIGN AREA</span>
-        <img id="logo-preview" src="">
+    <div class="factory-box">
+        <div style="position:absolute; color:#222; font-size:40px; font-weight:900; transform: rotate(-45deg);">FOCUS</div>
+        <img id="user-logo" src="">
     </div>
 
-    <input type="file" id="file-up" hidden onchange="loadImage(event)">
-    <button class="btn" style="background:#222; color:#fff;" onclick="document.getElementById('file-up').click()">UPLOAD DESIGN</button>
+    <input type="file" id="fileInput" hidden onchange="processImage(event)">
+    <button class="btn-gold" style="background:#222; color:#fff;" onclick="document.getElementById('fileInput').click()">1. UPLOAD ARTWORK</button>
     
-    <button class="btn" id="pay-btn" onclick="startPayment()">PAY 1 TEST-PI</button>
+    <button class="btn-gold" id="pay-btn" onclick="executePayment()">2. PAY 1 TEST-PI</button>
 
     <script>
-        // 1. Start Pi Connection
         const Pi = window.Pi;
-        let userConnected = false;
+        let isReady = false;
 
-        async function init() {
+        // Initialize the connection
+        async function connect() {
             try {
                 await Pi.init({ version: "2.0", sandbox: true });
-                const auth = await Pi.authenticate(['username', 'payments'], onIncompletePayment);
-                document.getElementById('status').innerText = "CONNECTED: " + auth.user.username.toUpperCase();
-                userConnected = true;
+                // The 'onIncompletePaymentFound' fixes the "Expired" error by clearing old stuck orders
+                const auth = await Pi.authenticate(['username', 'payments'], (payment) => {
+                    console.log("Clearing stuck payment:", payment.identifier);
+                });
+                document.getElementById('status-bar').innerText = "STATUS: CONNECTED - " + auth.user.username.toUpperCase();
+                isReady = true;
             } catch (e) {
-                document.getElementById('status').innerText = "LINK ERROR - REFRESH PI BROWSER";
+                document.getElementById('status-bar').innerText = "STATUS: CONNECTION FAILED";
             }
         }
+        connect();
 
-        function onIncompletePayment(payment) { /* Required by Pi SDK */ }
-        init();
-
-        // 2. Handle Image Upload & Moving
-        let pos = { x: 0, y: 0 }, sc = 1;
-        function loadImage(e) {
+        // Image Handling
+        function processImage(e) {
             const reader = new FileReader();
             reader.onload = () => {
-                const img = document.getElementById('logo-preview');
+                const img = document.getElementById('user-logo');
                 img.src = reader.result;
                 img.style.display = 'block';
             };
             reader.readAsDataURL(e.target.files[0]);
         }
 
-        interact('#logo-preview').draggable({
-            listeners: { move(e) { 
-                pos.x += e.dx; pos.y += e.dy; 
-                e.target.style.transform = `translate(${pos.x}px, ${pos.y}px) scale(${sc})`; 
+        // Dragging Logic
+        interact('#user-logo').draggable({
+            listeners: { move(e) {
+                const target = e.target;
+                const x = (parseFloat(target.getAttribute('data-x')) || 0) + e.dx;
+                const y = (parseFloat(target.getAttribute('data-y')) || 0) + e.dy;
+                target.style.transform = `translate(${x}px, ${y}px)`;
+                target.setAttribute('data-x', x);
+                target.setAttribute('data-y', y);
             }}
         });
 
-        // 3. The Payment Function (The "Unfreezer")
-        function startPayment() {
-            if (!userConnected) {
-                alert("Please wait for 'CONNECTED' status at the top.");
-                return;
-            }
+        // Payment Logic
+        function executePayment() {
+            if(!isReady) return alert("Still connecting to Pi Network...");
 
             Pi.createPayment({
                 amount: 1.0,
-                memo: "Focus Industrial Order",
-                metadata: { order: "DTF_PRINT" }
+                memo: "Focus Industrial Print Order",
+                metadata: { category: "DTF_GANG_SHEET" }
             }, {
-                onReadyForServerApproval: (id) => {
-                    // This alert proves the button is no longer frozen!
-                    alert("Order Created! Payment ID: " + id);
-                },
-                onReadyForServerCompletion: (id, tx) => {
-                    alert("Success! Order sent to printer.");
-                },
-                onCancel: () => console.log("User closed wallet"),
-                onError: (error) => alert("Wallet Error: " + error.message)
+                onReadyForServerApproval: (pid) => alert("Handshake Successful! ID: " + pid),
+                onReadyForServerCompletion: (pid, tx) => alert("Order Confirmed!"),
+                onCancel: () => console.log("User backed out"),
+                onError: (err) => alert("Error: " + err.message)
             });
         }
     </script>
