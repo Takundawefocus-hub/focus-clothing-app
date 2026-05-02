@@ -3,88 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Focus Family Hub</title>
+    <title>Focus Lab V3</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding: 20px; text-align: center; }
-        .factory-box { width: 100%; aspect-ratio: 1/1; background: #111; border: 2px solid #333; border-radius: 20px; margin: 20px 0; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        #user-logo { position: absolute; max-width: 150px; display: none; touch-action: none; z-index: 10; border: 2px dashed #FFD60A; }
-        .btn-gold { background: #FFD60A; color: #000; border: none; padding: 20px; border-radius: 15px; font-weight: 900; width: 100%; font-size: 18px; margin-top: 10px; box-shadow: 0 4px 15px rgba(255,214,10,0.3); }
-        #status-bar { color: #FFD60A; font-weight: bold; font-size: 12px; letter-spacing: 1px; margin-bottom: 10px; }
+        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding: 20px; }
+        .canvas { width: 100%; aspect-ratio: 1/1; background: #111; border: 2px solid #333; border-radius: 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; }
+        .btn { background: #FFD60A; color: #000; border: none; padding: 20px; border-radius: 15px; font-weight: 900; width: 100%; font-size: 18px; }
+        #status { color: #FFD60A; font-size: 12px; margin-bottom: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
-
-    <div id="status-bar">STATUS: BOOTING...</div>
-    <h2 style="margin:0;">INDUSTRIAL LAB</h2>
-
-    <div class="factory-box">
-        <div style="position:absolute; color:#222; font-size:40px; font-weight:900; transform: rotate(-45deg);">FOCUS</div>
-        <img id="user-logo" src="">
-    </div>
-
-    <input type="file" id="fileInput" hidden onchange="processImage(event)">
-    <button class="btn-gold" style="background:#222; color:#fff;" onclick="document.getElementById('fileInput').click()">1. UPLOAD ARTWORK</button>
-    
-    <button class="btn-gold" id="pay-btn" onclick="executePayment()">2. PAY 1 TEST-PI</button>
+    <div id="status">STATUS: CONNECTING...</div>
+    <h2>INDUSTRIAL DESIGN</h2>
+    <div class="canvas">PI PAYMENT ACTIVE</div>
+    <button class="btn" onclick="pay()">PAY 1 TEST-PI</button>
 
     <script>
         const Pi = window.Pi;
-        let isReady = false;
-
-        // Initialize the connection
-        async function connect() {
+        async function init() {
             try {
                 await Pi.init({ version: "2.0", sandbox: true });
-                // The 'onIncompletePaymentFound' fixes the "Expired" error by clearing old stuck orders
-                const auth = await Pi.authenticate(['username', 'payments'], (payment) => {
-                    console.log("Clearing stuck payment:", payment.identifier);
-                });
-                document.getElementById('status-bar').innerText = "STATUS: CONNECTED - " + auth.user.username.toUpperCase();
-                isReady = true;
-            } catch (e) {
-                document.getElementById('status-bar').innerText = "STATUS: CONNECTION FAILED";
-            }
+                const auth = await Pi.authenticate(['username', 'payments'], (p) => {});
+                document.getElementById('status').innerText = "CONNECTED: " + auth.user.username.toUpperCase();
+            } catch (e) { document.getElementById('status').innerText = "ERROR: REFRESH PI BROWSER"; }
         }
-        connect();
+        init();
 
-        // Image Handling
-        function processImage(e) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                const img = document.getElementById('user-logo');
-                img.src = reader.result;
-                img.style.display = 'block';
-            };
-            reader.readAsDataURL(e.target.files[0]);
-        }
-
-        // Dragging Logic
-        interact('#user-logo').draggable({
-            listeners: { move(e) {
-                const target = e.target;
-                const x = (parseFloat(target.getAttribute('data-x')) || 0) + e.dx;
-                const y = (parseFloat(target.getAttribute('data-y')) || 0) + e.dy;
-                target.style.transform = `translate(${x}px, ${y}px)`;
-                target.setAttribute('data-x', x);
-                target.setAttribute('data-y', y);
-            }}
-        });
-
-        // Payment Logic
-        function executePayment() {
-            if(!isReady) return alert("Still connecting to Pi Network...");
-
+        async function pay() {
             Pi.createPayment({
                 amount: 1.0,
-                memo: "Focus Industrial Print Order",
-                metadata: { category: "DTF_GANG_SHEET" }
+                memo: "Focus Clothing Order",
+                metadata: { type: "DTF" }
             }, {
-                onReadyForServerApproval: (pid) => alert("Handshake Successful! ID: " + pid),
-                onReadyForServerCompletion: (pid, tx) => alert("Order Confirmed!"),
-                onCancel: () => console.log("User backed out"),
-                onError: (err) => alert("Error: " + err.message)
+                onReadyForServerApproval: async (paymentId) => {
+                    document.getElementById('status').innerText = "APPROVING...";
+                    // THIS PART CONNECTS TO YOUR NEW api/approve.js FOLDER
+                    await fetch('/api/approve', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ paymentId })
+                    });
+                },
+                onReadyForServerCompletion: (paymentId, txid) => {
+                    alert("PAYMENT COMPLETE! TX: " + txid);
+                },
+                onCancel: (paymentId) => { console.log("Cancelled"); },
+                onError: (error, payment) => { alert("Error: " + error.message); }
             });
         }
     </script>
